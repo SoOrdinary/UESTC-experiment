@@ -8,33 +8,19 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
-class MainActivity : AppCompatActivity() {
-    // 定义日志标签，方便过滤日志
-    private val TAG = "LifecycleDemo"
-
-    companion object{
-        var iso=true
-    }
+class MainActivityB : AppCompatActivity() {
+    private val TAG = "LifecycleDemoB"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d(TAG, "onCreate() 被调用 - Activity正在创建")
-
         enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_main_b)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-
-        // 在onCreate中调用finish()
-        Log.d(TAG, "准备在onCreate()中调用finish()")
-        if(iso){
-            iso=false
-            val intent=Intent(this,MainActivityB::class.java)
-            startActivity(intent)
-        }
-        finish()
+        val intent= Intent(this,MainActivity::class.java)
+        //startActivity(intent)
     }
 
     override fun onStart() {
