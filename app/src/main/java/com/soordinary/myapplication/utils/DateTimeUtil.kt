@@ -1,4 +1,4 @@
-package com.soordinary.todo.utils
+package com.soordinary.myapplication.utils
 
 import java.text.ParseException
 import java.text.SimpleDateFormat

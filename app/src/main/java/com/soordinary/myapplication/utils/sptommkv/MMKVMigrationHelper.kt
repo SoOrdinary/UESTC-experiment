@@ -1,4 +1,4 @@
-package com.soordinary.todo.utils.sptommkv
+package com.soordinary.myapplication.utils.sptommkv
 
 import android.content.Context
 import com.tencent.mmkv.MMKV

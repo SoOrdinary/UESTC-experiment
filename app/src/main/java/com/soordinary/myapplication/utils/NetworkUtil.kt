@@ -1,4 +1,4 @@
-package com.soordinary.todo.utils
+package com.soordinary.myapplication.utils
 
 import android.content.Context
 import android.net.ConnectivityManager

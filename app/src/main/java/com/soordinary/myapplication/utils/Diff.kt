@@ -1,4 +1,4 @@
-package com.soordinary.todo.utils
+package com.soordinary.myapplication.utils
 
 /**
  * 公共Diff类，需要传入equals方法，用于比较两个T是否相同

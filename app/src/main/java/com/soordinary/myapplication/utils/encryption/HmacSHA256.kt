@@ -1,4 +1,4 @@
-package com.soordinary.todo.utils.encryption
+package com.soordinary.myapplication.utils.encryption
 
 import java.nio.charset.StandardCharsets
 import javax.crypto.Mac

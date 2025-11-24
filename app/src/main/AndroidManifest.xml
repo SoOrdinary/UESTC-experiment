@@ -33,7 +33,7 @@
             android:name=".MainActivityB"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name=".view.MainActivity"
             android:exported="true"
             android:launchMode="singleTask">
             <intent-filter>
