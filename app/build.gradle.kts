@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.soordinary.myapplication"
+    namespace = "com.soordinary.transfer"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.soordinary.myapplication"
+        applicationId = "com.soordinary.transfer"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
