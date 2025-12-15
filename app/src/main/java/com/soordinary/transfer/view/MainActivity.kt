@@ -2,14 +2,20 @@ package com.soordinary.transfer.view
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
+import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.ui.window.Window
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.NavOptions
@@ -44,23 +50,19 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
 
         enableEdgeToEdge()
 
-        binding.initView()
+        binding.initView(this)
         // 初始化各种点击事件
         binding.initClick()
     }
 
-    private fun ActivityMainBinding.initView() {
+
+    private fun ActivityMainBinding.initView(context: Context) {
+        window.statusBarColor = ContextCompat.getColor(context, R.color.nav_background)
+        window.navigationBarColor = ContextCompat.getColor(context, R.color.nav_bottom)
+
         // 设置样式[在这里面才能获取到系统UI参数，异步执行的]
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            // 主界面顶部与底部留高检测设置
-            val topLayoutParams = binding.topImprove.layoutParams as ConstraintLayout.LayoutParams
-            val bottomLayoutParams = binding.bottomImprove.layoutParams as ConstraintLayout.LayoutParams
-            topLayoutParams.height = systemBars.top
-            bottomLayoutParams.height = systemBars.bottom
-            binding.topImprove.layoutParams = topLayoutParams
-            binding.bottomImprove.layoutParams = bottomLayoutParams
-            binding.navBottom.setPadding(0, 0, 0, 0)
             // 侧边栏UI修正高度
             binding.navSide.getHeaderView(0).setPadding(0, systemBars.top, 0, 0)
             insets

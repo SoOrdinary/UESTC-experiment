@@ -60,6 +60,7 @@ dependencies {
     implementation ("org.jsoup:jsoup:1.16.1")
     implementation ("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.0")
     implementation ("com.tencent:mmkv:2.2.2")
+    implementation(libs.androidx.ui.desktop)
     kapt("com.github.bumptech.glide:compiler:4.15.1")
     kapt("androidx.room:room-compiler:2.5.1")
     testImplementation(libs.junit)

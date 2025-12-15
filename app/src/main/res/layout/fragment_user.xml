@@ -65,7 +65,7 @@
             android:layout_width="match_parent"
             android:layout_height="2dp"
             android:layout_marginVertical="8dp"
-            android:background="#EEEEEE" />
+            android:background="#F0F0F2" />
 
         <!-- 更改个人信息选项 -->
         <LinearLayout
