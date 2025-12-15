@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/fragment_folder">
+
+    <fragment
+        android:id="@+id/fragment_folder"
+        android:name="com.soordinary.transfer.view.folder.FolderFragment"
+        android:label="folder"
+        tools:layout="@layout/fragment_folder" />
+
+    <fragment
+        android:id="@+id/fragment_revolve"
+        android:name="com.soordinary.transfer.view.record.RevolveFragment"
+        android:label="revolve"
+        tools:layout="@layout/fragment_revolve" />
+
+    <fragment
+        android:id="@+id/fragment_transfer"
+        android:name="com.soordinary.transfer.view.transfer.TransferFragment"
+        android:label="transfer"
+        tools:layout="@layout/fragment_transfer" />
+
+    <fragment
+        android:id="@+id/fragment_user"
+        android:name="com.soordinary.transfer.view.user.UserFragment"
+        android:label="user"
+        tools:layout="@layout/fragment_user" />
+
+</navigation>

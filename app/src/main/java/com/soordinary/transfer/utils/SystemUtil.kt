@@ -7,7 +7,7 @@ import com.soordinary.transfer.UESTCApplication
  *
  * @role1 获取屏幕密度、宽度、高度
  */
-object SizeUtil {
+object SystemUtil {
 
     // 系统资源
     private val systemResources = UESTCApplication.context.resources

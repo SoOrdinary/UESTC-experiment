@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@id/fragment_folder"
+            android:icon="@drawable/nav_bottom_folder"
+            android:title="" />
+        <item
+            android:id="@id/fragment_revolve"
+            android:icon="@drawable/nav_bottom_revolve"
+            android:title="" />
+        <item
+            android:id="@+id/nav_add"
+            android:icon="@drawable/nav_bottom_add"
+            android:title="" />
+        <item
+            android:id="@id/fragment_transfer"
+            android:icon="@drawable/nav_bottom_transfer"
+            android:title="" />
+        <item
+            android:id="@id/fragment_user"
+            android:icon="@drawable/nav_bottom_user"
+            android:title="" />
+    </group>
+
+</menu>

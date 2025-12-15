@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group
+        android:id="@+id/classify_by_dates"
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/today_task"
+            android:title="限定文件夹" />
+        <item
+            android:id="@+id/timeout_task"
+            android:title="限定类型" />
+    </group>
+    <group
+        android:id="@+id/classify_by_tags"
+        android:checkableBehavior="single">
+    </group>
+</menu>
