@@ -26,7 +26,6 @@ class UESTCApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         _context = applicationContext
-        // todo：前台服务也需要初始化
         // 初始化MMKV
         MMKV.initialize(context)
     }

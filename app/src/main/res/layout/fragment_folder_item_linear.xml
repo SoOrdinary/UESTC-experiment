@@ -39,7 +39,7 @@
                     android:fontFamily="@font/mono"
                     android:text=""
                     android:textColor="@color/black"
-                    android:textSize="14sp"
+                    android:textSize="12sp"
                     android:textStyle="bold"
                     android:singleLine="true"
                     android:ellipsize="end" />
@@ -60,8 +60,8 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/mono"
                 android:text=""
-                android:textColor="@color/nav_background"
-                android:textSize="9sp" />
+                android:textColor="@color/gray"
+                android:textSize="8sp" />
         </LinearLayout>
 
     </LinearLayout>

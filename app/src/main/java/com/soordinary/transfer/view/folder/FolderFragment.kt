@@ -4,7 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.Environment
+import android.util.Log
 import android.view.View
 import android.webkit.MimeTypeMap
 import androidx.core.content.FileProvider
@@ -51,11 +51,13 @@ class FolderFragment : Fragment(R.layout.fragment_folder)  {
             folderList = emptyList(),
             onDirClick = { newPath ->
                 // 目录跳转回调：更新路径 → 刷新路径显示 → 重新加载列表
-                currentPath = newPath
+                currentPath = FolderTreeLoader.getRelativePath(newPath)
                 updateFilePathDisplay()
                 loadFolderList()
             },
-            onFileClick = {openFileWithSystemChooser(it) },
+            onFileClick = {
+                openFileWithSystemChooser(it)
+            },
             onFileChecked = { fileEntity, isChecked ->
                 // 可选：文件勾选状态回调，用于后续备份逻辑
             }
@@ -73,16 +75,13 @@ class FolderFragment : Fragment(R.layout.fragment_folder)  {
      * 更新文件路径显示（核心：把currentPath显示到file_path控件）
      */
     private fun updateFilePathDisplay() {
-        // 优化路径显示：根目录显示"根目录"，其他路径显示完整路径（或简化为最后一级目录）
+        // 优化路径显示：根目录显示"根目录"，其他路径显示完整路径
         val displayPath = if (currentPath == "/" || currentPath == File.separator) {
             "根目录"
         } else {
-            // 可选1：显示完整路径
             currentPath
-            // 可选2：仅显示最后一级目录（更简洁）
-            // currentPath.substringAfterLast(File.separator)
         }
-        binding.filePath.text = "$displayPath"
+        binding.filePath.text = displayPath
     }
 
     /**
@@ -90,17 +89,19 @@ class FolderFragment : Fragment(R.layout.fragment_folder)  {
      */
     private fun loadFolderList() {
         Thread {
-            val fileList = FolderTreeLoader.loadFolderList(rootPath+currentPath)
+            val fileList = FolderTreeLoader.loadFolderList("$rootPath$currentPath")
             activity?.runOnUiThread {
                 folderAdapter = FolderAdapter(
                     fragment = this@FolderFragment,
                     folderList = fileList,
                     onDirClick = { newPath ->
-                        currentPath = newPath
+                        currentPath = FolderTreeLoader.getRelativePath(newPath)
                         updateFilePathDisplay()
                         loadFolderList()
                     },
-                    onFileClick = { openFileWithSystemChooser(it) },
+                    onFileClick = {
+                        openFileWithSystemChooser(it)
+                    },
                     onFileChecked = { _, _ -> }
                 )
                 binding.folderList.adapter = folderAdapter
@@ -116,10 +117,8 @@ class FolderFragment : Fragment(R.layout.fragment_folder)  {
     private fun openFileWithSystemChooser(filePath: String) {
         val context = requireContext()
         val file = File(filePath)
-
         // 1. 校验文件是否存在
         if (!file.exists()) {
-            // 可选：提示文件不存在
             return
         }
 

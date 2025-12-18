@@ -3,6 +3,7 @@ package com.soordinary.transfer.view.folder
 import android.os.Build
 import android.system.Os
 import android.system.OsConstants
+import com.soordinary.transfer.UESTCApplication
 import java.io.File
 
 /**
@@ -21,8 +22,7 @@ object FolderTreeLoader {
         val currentFile = File(currentPath)
 
         // 1. 添加上级目录项（根目录除外）
-        if (!isRootPath(currentPath)) {
-            val parentPath = currentFile.parent ?: "/"
+        if (!isRootPath(getRelativePath(currentPath))) {
             fileList.add(
                 FileEntity(
                     type = FileEntity.FileType.PARENTDIRECTORY,
@@ -33,6 +33,7 @@ object FolderTreeLoader {
                 )
             )
         }
+
 
         // 2. 读取当前目录下的文件/文件夹，生成对应实体
         currentFile.listFiles()?.forEach { file ->
@@ -66,6 +67,28 @@ object FolderTreeLoader {
             )
         )
         return fileList
+    }
+
+    fun getRelativePath(absolutePath: String): String {
+        // 1. 先去除路径两端的空格，避免意外
+        val trimmedAbsolutePath = absolutePath.trim()
+        val trimmedRootPath = UESTCApplication.context.getExternalFilesDir(null)?.path  ?: UESTCApplication.context.filesDir.path
+
+        // 2. 检查绝对路径是否以 rootPath 开头
+        return if (trimmedAbsolutePath.startsWith(trimmedRootPath)) {
+            // 3. 截取掉 rootPath 部分
+            val relative = trimmedAbsolutePath.substring(trimmedRootPath.length)
+            // 4. 处理边界：如果截取后为空（绝对路径=rootPath），返回 "/"；否则返回截取结果（确保以/开头）
+            if (relative.isEmpty() || relative == "/") {
+                "/"
+            } else {
+                // 确保相对路径以 / 开头（比如 rootPath 是 /a/b，绝对路径是 /a/bc → 避免返回 bc，应该返回 /bc）
+                if (relative.startsWith("/")) relative else "/$relative"
+            }
+        } else {
+            // 如果路径不包含 rootPath，返回原路径（或根据需求返回空/抛出提示）
+            trimmedAbsolutePath
+        }
     }
 
     /**

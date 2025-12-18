@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.soordinary.transfer.R
 import com.soordinary.transfer.databinding.FragmentFolderItemLinearBinding
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -47,47 +48,43 @@ class FolderAdapter(
         @SuppressLint("SetTextI18n")
         override fun bind(file: FileEntity) {
             with(binding) {
-                // 1. 左侧文件图标：根据文件类型设置
                 ivFileIcon.setImageResource(getFileIconRes(file.type, file.extension))
-                // 2. 文件名称：区分上级目录的显示
-                tvFileName.text = when (file.type) {
-                    FileEntity.FileType.PARENTDIRECTORY -> "返回上级 (..)"
-                    else -> "${file.name} ${file.type}   ${formatFileSize(file.size)}"
-                }
-
-                // 3. 勾选框：上级目录禁用，其他类型区分状态
-                cbFileSelected.isEnabled = file.type != FileEntity.FileType.PARENTDIRECTORY
-                cbFileSelected.isChecked = when (file.type) {
-                    FileEntity.FileType.PARENTDIRECTORY -> false
-                    FileEntity.FileType.DIRECTORY -> false // 文件夹默认不勾选
-                    else -> true // 普通文件默认勾选
-                }
-
-                // 4. 最后修改时间：格式化时间戳
-                tvFileModifyTime.text = "最后修改：${formatTime(file.lastModified)}"
-
-                // 5. 条目点击事件：目录跳转/文件打开
-                itemView.setOnClickListener {
-                    val targetPath = "${file.parentPath}/${file.name}"
-                    when (file.type) {
-                        FileEntity.FileType.PARENTDIRECTORY -> {
-                            // 上级目录跳转至父路径
-                            onDirClick(file.parentPath)
-                        }
-                        FileEntity.FileType.DIRECTORY -> {
-                            // 文件夹跳转：父路径 + 文件夹名
-                            onDirClick(targetPath)
-                        }
-                        else -> {
-                            // 保留原有回调（可选）
-                            onFileClick(targetPath)
+                when(file.type){
+                    // 上级目录
+                    FileEntity.FileType.PARENTDIRECTORY->{
+                        tvFileName.text=".."
+                        cbFileSelected.visibility=View.INVISIBLE
+                        tvFileModifyTime.text = "返回上级目录"
+                        itemView.setOnClickListener {
+                            val currentPath = File(file.parentPath)
+                            currentPath.parent?.let {
+                                onDirClick(it)
+                            }
                         }
                     }
-                }
+                    // 文件夹
+                    FileEntity.FileType.DIRECTORY->{
+                        tvFileName.text=file.name
+                        cbFileSelected.visibility=View.INVISIBLE
+                        tvFileModifyTime.text = formatTime(file.lastModified)
+                        itemView.setOnClickListener {
+                            onDirClick(file.parentPath+file.name)
+                        }
+                    }
+                    // 其他文件
+                    else->{
+                        tvFileName.text=file.name
+                        // todo:判断是否已经压缩，决定是否勾选;以及压缩方法
+                        cbFileSelected.isChecked = false
+                        cbFileSelected.setOnCheckedChangeListener { _, isChecked ->
+                            onFileChecked(file, isChecked)
+                        }
 
-                // 7. 勾选框点击事件：回调选中状态
-                cbFileSelected.setOnCheckedChangeListener { _, isChecked ->
-                    onFileChecked(file, isChecked)
+                        tvFileModifyTime.text = formatTime(file.lastModified)
+                        itemView.setOnClickListener {
+                            onFileClick(file.parentPath+"/"+file.name)
+                        }
+                    }
                 }
             }
         }
@@ -118,7 +115,7 @@ class FolderAdapter(
          */
         private fun formatTime(timestamp: Long): String {
             return if (timestamp == 0L) {
-                "未知时间"
+                ""
             } else {
                 SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA)
                     .format(Date(timestamp))
