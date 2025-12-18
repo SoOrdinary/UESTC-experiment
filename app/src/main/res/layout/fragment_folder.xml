@@ -41,6 +41,17 @@
             android:src="@drawable/task_linear" />
     </androidx.appcompat.widget.Toolbar>
 
+    <TextView
+        android:id="@+id/file_path"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/mono"
+        android:text="阅览室"
+        android:textColor="@android:color/black"
+        android:layout_marginVertical="10dp"
+        android:layout_marginHorizontal="18dp"
+        android:textSize="10sp" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/folder_list"
         android:layout_width="match_parent"
