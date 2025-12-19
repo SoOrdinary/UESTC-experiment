@@ -14,7 +14,7 @@ import java.util.Locale
 
 class FolderAdapter(
     private val fragment: FolderFragment,
-    private val folderList: List<FileEntity>,
+    private var folderList: List<FileEntity>,
     // 新增：目录跳转回调
     private val onDirClick: (String) -> Unit,
     // 普通文件点击回调（改为直接在Adapter内处理打开逻辑，无需透传）
@@ -22,6 +22,11 @@ class FolderAdapter(
     // 新增：勾选状态回调（可选，用于备份选中）
     private val onFileChecked: (FileEntity, Boolean) -> Unit = { _, _ -> }
 ) : RecyclerView.Adapter<FolderAdapter.BaseViewHolder>() {
+
+    fun updateData(newList: List<FileEntity>) {
+        this.folderList = newList // 更新数据源
+        notifyDataSetChanged() // 刷新列表UI
+    }
 
     // 内部基类，简化多种适配item与bind的书写
     abstract inner class BaseViewHolder(view: View) : RecyclerView.ViewHolder(view) {

@@ -16,6 +16,7 @@ import com.soordinary.transfer.R
 import com.soordinary.transfer.databinding.ActivityMainBinding
 import com.soordinary.transfer.databinding.NavSideHeaderBinding
 import com.soordinary.transfer.utils.SystemUtil
+import com.soordinary.transfer.view.folder.FolderFragment
 
 class MainActivity : BaseActivity<ActivityMainBinding>() {
     // 定义日志标签，方便过滤日志
@@ -79,6 +80,22 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
             // if (fragment is TaskFragment) fragment.ListenTaskItemClick().onClickMenuItem(it)
             layoutMain.closeDrawers()
             true
+        }
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        val navController = navHostFragment.findNavController()
+        binding.navBottom. setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                // 如果是 "nav_add" 按钮，根据当前fragment设置逻辑，同时返回else表示add按钮不被选中
+                R.id.nav_add -> {
+                    when (val fragment = navHostFragment.childFragmentManager.fragments[0]) {
+                        is FolderFragment -> fragment.onSelectFileClick()
+                        else -> {}
+                    }
+                    false
+                }
+                // 其他按钮默认导航
+                else -> NavigationUI.onNavDestinationSelected(item, navController)
+            }
         }
     }
 

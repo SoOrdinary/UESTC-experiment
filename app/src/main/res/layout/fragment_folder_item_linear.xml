@@ -36,6 +36,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:layout_weight="1"
+                    android:paddingRight="10dp"
                     android:fontFamily="@font/mono"
                     android:text=""
                     android:textColor="@color/black"

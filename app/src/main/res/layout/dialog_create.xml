@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+    <!-- 核心：左右分割的可点击区域（中间带分割线） -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal">
+
+        <!-- 左侧：新建文件夹区域（可点击） -->
+        <LinearLayout
+            android:id="@+id/ll_create_folder"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="新建文件夹"
+                android:fontFamily="@font/mono"
+                android:textSize="16sp"
+                android:textColor="@android:color/black"/>
+        </LinearLayout>
+
+        <!-- 中间垂直分割线 -->
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@android:color/darker_gray"/>
+
+        <!-- 右侧：备份文件区域（可点击） -->
+        <LinearLayout
+            android:id="@+id/ll_backup_file"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="备份已有文件"
+                android:textSize="16sp"
+                android:fontFamily="@font/mono"
+                android:textColor="@android:color/black"/>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>
