@@ -1,6 +1,7 @@
 package com.soordinary.transfer.view.folder
 
 import android.annotation.SuppressLint
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,6 +20,8 @@ class FolderAdapter(
     private val onDirClick: (String) -> Unit,
     // 普通文件点击回调（改为直接在Adapter内处理打开逻辑，无需透传）
     private val onFileClick: (String) -> Unit,
+    // 长按回调
+    private val onLongClick: (String) -> Unit,
     // 新增：勾选状态回调（可选，用于备份选中）
     private val onFileChecked: (FileEntity, Boolean) -> Unit = { _, _ -> }
 ) : RecyclerView.Adapter<FolderAdapter.BaseViewHolder>() {
@@ -73,7 +76,11 @@ class FolderAdapter(
                         cbFileSelected.visibility=View.INVISIBLE
                         tvFileModifyTime.text = formatTime(file.lastModified)
                         itemView.setOnClickListener {
-                            onDirClick(file.parentPath+file.name)
+                            onDirClick(file.parentPath+"/"+file.name)
+                        }
+                        itemView.setOnLongClickListener {
+                            onLongClick(file.parentPath+"/"+file.name)
+                            true // 消费
                         }
                     }
                     // 其他文件
@@ -88,6 +95,10 @@ class FolderAdapter(
                         tvFileModifyTime.text = formatTime(file.lastModified)
                         itemView.setOnClickListener {
                             onFileClick(file.parentPath+"/"+file.name)
+                        }
+                        itemView.setOnLongClickListener {
+                            onLongClick(file.parentPath+"/"+file.name)
+                            true // 消费长按事件
                         }
                     }
                 }

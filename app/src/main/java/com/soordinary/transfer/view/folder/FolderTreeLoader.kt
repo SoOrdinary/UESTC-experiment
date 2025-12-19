@@ -18,16 +18,21 @@ object FolderTreeLoader {
      * @return 包含上级目录项的FileEntity列表
      */
     fun loadFolderList(currentPath: String): MutableList<FileEntity> {
+        val normalizedPath = if (currentPath.endsWith("/") && currentPath != "/") {
+            currentPath.substring(0, currentPath.length - 1)
+        } else {
+            currentPath
+        }
         val fileList = mutableListOf<FileEntity>()
-        val currentFile = File(currentPath)
+        val currentFile = File(normalizedPath)
 
         // 1. 添加上级目录项（根目录除外）
-        if (!isRootPath(getRelativePath(currentPath))) {
+        if (!isRootPath(getRelativePath(normalizedPath))) {
             fileList.add(
                 FileEntity(
                     type = FileEntity.FileType.PARENTDIRECTORY,
                     name = "..",
-                    parentPath = currentPath, // 上级项的父路径指向当前目录
+                    parentPath = normalizedPath, // 上级项的父路径指向当前目录
                     size = 0,
                     lastModified = 0
                 )
@@ -49,7 +54,7 @@ object FolderTreeLoader {
                     type = fileType,
                     extension = extension,
                     name = file.name,
-                    parentPath = currentPath,
+                    parentPath = normalizedPath,
                     size = if (file.isFile) file.length() else 0,
                     lastModified = file.lastModified()
                 )
@@ -59,11 +64,22 @@ object FolderTreeLoader {
             return mutableListOf()
         }
 
-        // 3. 排序：文件夹/上级项在前，文件在后，按名称排序
+        // 1. 文件夹/上级目录始终排在最前面
+        // 2. 普通文件先按扩展名（小写，避免大小写干扰）排序，扩展名相同则按名称排序
         fileList.sortWith(
             compareBy(
-                { it.type !in listOf(FileEntity.FileType.PARENTDIRECTORY, FileEntity.FileType.DIRECTORY) },
-                { it.name }
+                // 第一优先级：文件夹/上级项在前（true=排后面，false=排前面）
+                {
+                    it.type !in listOf(FileEntity.FileType.PARENTDIRECTORY, FileEntity.FileType.DIRECTORY) }
+                ,
+                // 第二优先级：文件按扩展名排序（空扩展名（如无后缀文件）排前面）
+                {
+                    if (it.type == FileEntity.FileType.NORMAL) it.extension.lowercase() else ""
+                },
+                // 第三优先级：所有项按名称排序（小写，保证排序不区分大小写）
+                {
+                    it.name.lowercase()
+                }
             )
         )
         return fileList
@@ -95,7 +111,7 @@ object FolderTreeLoader {
      * 判断是否为根目录（避免无限返回上级）
      */
     private fun isRootPath(path: String): Boolean {
-        return path == "/" || path == File.separator || path.endsWith(File.separator + "root")
+        return path == "" || path == File.separator || path.endsWith(File.separator + "root")
     }
 
     /**

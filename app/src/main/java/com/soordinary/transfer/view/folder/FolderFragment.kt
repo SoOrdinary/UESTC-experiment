@@ -56,6 +56,17 @@ class FolderFragment : Fragment(R.layout.fragment_folder)  {
                 loadFolderList()
             },
             onFileClick = { openFileWithSystemChooser(it) },
+            onLongClick = {
+                // 弹出编辑弹窗
+                val editDialog = EditDialog(
+                    requireContext(),
+                    it,
+                    {
+                        loadFolderList()
+                    }
+                )
+                editDialog.show()
+            },
             onFileChecked = { _, _ -> }
         )
 
