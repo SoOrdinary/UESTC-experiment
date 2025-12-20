@@ -25,18 +25,41 @@ class FolderFragment : Fragment(R.layout.fragment_folder)  {
     private lateinit var currentPath : String
     private lateinit var filePickerLauncher: ActivityResultLauncher<Array<String>>
     // 声明Dialog实例（可选，按需创建）
-    private var createDialog: CreateDialog? = null
+    private var createFolderDialog: CreateFolderDialog? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentFolderBinding.bind(view)
-        rootPath = requireActivity().getExternalFilesDir(null)?.path  ?: requireActivity().filesDir.path
+
+        // 1. 初始化根路径
+        rootPath = (requireActivity().getExternalFilesDir(null)?.path  ?: requireActivity().filesDir.path)+"/storage"
+        // 2. 检查并创建文件夹（核心修改点）
+        createFolderIfNotExists(rootPath)
+
         currentPath = "/"
 
         binding.initView()
         updateFilePathDisplay()
         loadFolderList()
         initFilePicker()
+    }
+
+    /**
+     * 工具方法：检查文件夹是否存在，不存在则创建
+     * @param folderPath 要检查的文件夹路径
+     */
+    private fun createFolderIfNotExists(folderPath: String) {
+        val folder = File(folderPath)
+        if (!folder.exists()) {
+            val isCreated = folder.mkdirs()
+            if (isCreated) {
+                // 可选：创建成功的日志
+                // Log.d("FolderFragment", "文件夹创建成功: $folderPath")
+            } else {
+                // 可选：创建失败的日志（排查权限问题）
+                // Log.e("FolderFragment", "文件夹创建失败: $folderPath")
+            }
+        }
     }
 
     /**
@@ -148,7 +171,7 @@ class FolderFragment : Fragment(R.layout.fragment_folder)  {
         filePickerLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
             uri?.let {
                 // 调用Dialog的内部方法处理复制
-                createDialog?.copyFileToTargetPath(it)
+                createFolderDialog?.copyFileToTargetPath(it)
             }
         }
     }
@@ -156,16 +179,16 @@ class FolderFragment : Fragment(R.layout.fragment_folder)  {
     /**
      * 简化后的弹窗调用：只需传递参数，无回调逻辑
      */
-    fun onSelectFileClick() {
+    fun showCreateFolderDialog() {
         // 创建Dialog并传递关键参数
-        createDialog = CreateDialog(
+        createFolderDialog = CreateFolderDialog(
             context = requireContext(),
             rootPath = rootPath,
             currentPath = currentPath,
             refreshCallback = { loadFolderList() }, // 仅传递刷新方法
             filePickerLauncher = filePickerLauncher
         )
-        createDialog?.show()
+        createFolderDialog?.show()
     }
 
     /**
@@ -174,7 +197,7 @@ class FolderFragment : Fragment(R.layout.fragment_folder)  {
     override fun onDestroyView() {
         super.onDestroyView()
         binding.folderList.adapter = null
-        createDialog?.dismiss()
-        createDialog = null
+        createFolderDialog?.dismiss()
+        createFolderDialog = null
     }
 }

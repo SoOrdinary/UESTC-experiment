@@ -17,6 +17,7 @@ import com.soordinary.transfer.databinding.ActivityMainBinding
 import com.soordinary.transfer.databinding.NavSideHeaderBinding
 import com.soordinary.transfer.utils.SystemUtil
 import com.soordinary.transfer.view.folder.FolderFragment
+import com.soordinary.transfer.view.revolve.RevolveFragment
 
 class MainActivity : BaseActivity<ActivityMainBinding>() {
     // 定义日志标签，方便过滤日志
@@ -88,7 +89,8 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                 // 如果是 "nav_add" 按钮，根据当前fragment设置逻辑，同时返回else表示add按钮不被选中
                 R.id.nav_add -> {
                     when (val fragment = navHostFragment.childFragmentManager.fragments[0]) {
-                        is FolderFragment -> fragment.onSelectFileClick()
+                        is FolderFragment -> fragment.showCreateFolderDialog()
+                        is RevolveFragment -> fragment.showCreateTaskDialog()
                         else -> {}
                     }
                     false

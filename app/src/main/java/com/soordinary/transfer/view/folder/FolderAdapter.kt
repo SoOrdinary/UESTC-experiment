@@ -1,10 +1,10 @@
 package com.soordinary.transfer.view.folder
 
 import android.annotation.SuppressLint
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.soordinary.transfer.R
 import com.soordinary.transfer.databinding.FragmentFolderItemLinearBinding
@@ -69,6 +69,10 @@ class FolderAdapter(
                                 onDirClick(it)
                             }
                         }
+                        itemView.setOnLongClickListener {
+                            Toast.makeText(fragment.requireContext(),"无事发生",Toast.LENGTH_SHORT).show()
+                            true // 消费
+                        }
                     }
                     // 文件夹
                     FileEntity.FileType.DIRECTORY->{
@@ -110,7 +114,7 @@ class FolderAdapter(
          * 根据文件类型/扩展名获取图标资源
          */
         private fun getFileIconRes(type: FileEntity.FileType, extension: String): Int {
-            // 临时使用app_icon，后续替换为实际图标
+            // todo:临时使用app_icon，后续替换为实际图标
             return R.drawable.app_icon
         }
 

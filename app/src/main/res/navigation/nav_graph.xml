@@ -13,7 +13,7 @@
 
     <fragment
         android:id="@+id/fragment_revolve"
-        android:name="com.soordinary.transfer.view.record.RevolveFragment"
+        android:name="com.soordinary.transfer.view.revolve.RevolveFragment"
         android:label="revolve"
         tools:layout="@layout/fragment_revolve" />
 

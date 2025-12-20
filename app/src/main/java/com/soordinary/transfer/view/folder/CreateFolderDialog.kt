@@ -26,7 +26,7 @@ import android.provider.OpenableColumns
  * @param refreshCallback 刷新文件列表的回调
  * @param filePickerLauncher 文件选择器Launcher（用于唤起文件选择）
  */
-class CreateDialog(
+class CreateFolderDialog(
     private val context: Context,
     private val rootPath: String,
     private val currentPath: String,
@@ -46,7 +46,7 @@ class CreateDialog(
     }
 
     private fun initView() {
-        val view = LayoutInflater.from(context).inflate(R.layout.dialog_create, null)
+        val view = LayoutInflater.from(context).inflate(R.layout.dialog_folder_create, null)
         setContentView(view)
 
         llCreateFolder = view.findViewById(R.id.ll_create_folder)

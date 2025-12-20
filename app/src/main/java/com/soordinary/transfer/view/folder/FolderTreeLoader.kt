@@ -88,7 +88,7 @@ object FolderTreeLoader {
     fun getRelativePath(absolutePath: String): String {
         // 1. 先去除路径两端的空格，避免意外
         val trimmedAbsolutePath = absolutePath.trim()
-        val trimmedRootPath = UESTCApplication.context.getExternalFilesDir(null)?.path  ?: UESTCApplication.context.filesDir.path
+        val trimmedRootPath = (UESTCApplication.context.getExternalFilesDir(null)?.path  ?: UESTCApplication.context.filesDir.path)+"/storage"
 
         // 2. 检查绝对路径是否以 rootPath 开头
         return if (trimmedAbsolutePath.startsWith(trimmedRootPath)) {

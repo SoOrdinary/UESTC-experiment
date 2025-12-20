@@ -26,8 +26,6 @@ data class FileEntity(
         DIRECTORY,    // 文件夹
         SYMBOLIC_LINK,// 软链接
         HARD_LINK,    // 硬链接
-        PIPE,         // 管道文件
-        DEVICE,       // 设备文件
-        SOCKET        // 套接字文件
+        PIPE          // 管道文件
     }
 }

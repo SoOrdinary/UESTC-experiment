@@ -1,38 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/revolve_item"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginVertical="5dp"
-    android:orientation="vertical"
-    android:paddingHorizontal="5dp">
+    android:layout_margin="8dp"
+    app:cardCornerRadius="16dp">
 
     <LinearLayout
+        android:id="@+id/task_grid"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/time"
-            android:layout_width="wrap_content"
+        <ImageView
+            android:id="@+id/task_grid_cover_image"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="top"
-            android:fontFamily="@font/mono"
-            android:paddingHorizontal="5dp"
-            android:paddingTop="4dp"
-            android:text="10:15"
-            android:textSize="16sp" />
+            android:adjustViewBounds="true"
+            android:src="@drawable/app_icon"
+            android:scaleType="centerCrop" />
 
-        <TextView
-            android:id="@+id/record"
-            android:layout_width="0dp"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="1"
-            android:fontFamily="@font/mono"
-            android:paddingTop="4dp"
-            android:text=""
-            android:textColor="@color/gray"
-            android:textSize="16sp" />
+            android:orientation="vertical"
+            android:padding="10dp">
+
+            <TextView
+                android:id="@+id/task_grid_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:fontFamily="@font/mono"
+                android:paddingTop="4dp"
+                android:text="中转计划"
+                android:textColor="@color/black"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/task_grid_dueDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/mono"
+                android:text="中转类型"
+                android:textColor="@color/gray"
+                android:textSize="9sp" />
+        </LinearLayout>
+
     </LinearLayout>
-
-</LinearLayout>
+</androidx.cardview.widget.CardView>
