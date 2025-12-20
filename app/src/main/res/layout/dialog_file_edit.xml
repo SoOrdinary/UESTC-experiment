@@ -1,47 +1,105 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp">
 
-    <!-- 文件基本信息区域 -->
+    <!-- 文件基本信息区域：保留你当前的配置（字号12sp、间距8dp等） -->
     <TextView
-        android:id="@+id/tv_file_info"
+        android:id="@+id/tv_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:textSize="14sp"
-        android:textColor="#333333"/>
+        android:fontFamily="@font/mono"
+        android:textSize="12sp"
+        android:textColor="#333333"
+        android:layout_marginBottom="8dp"/>
 
-    <!-- 重命名输入框（默认隐藏，点击重命名按钮显示） -->
-    <EditText
-        android:id="@+id/et_new_name"
+    <TextView
+        android:id="@+id/tv_type"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="请输入新名称"
+        android:fontFamily="@font/mono"
+        android:textSize="12sp"
+        android:textColor="#333333"
+        android:layout_marginBottom="8dp"/>
+
+    <TextView
+        android:id="@+id/tv_path"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/mono"
+        android:textSize="12sp"
+        android:textColor="#333333"
+        android:layout_marginBottom="8dp"/>
+
+    <TextView
+        android:id="@+id/tv_size"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/mono"
+        android:textSize="12sp"
+        android:textColor="#333333"
+        android:layout_marginBottom="8dp"/>
+
+    <TextView
+        android:id="@+id/tv_modify_time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/mono"
+        android:textSize="12sp"
+        android:textColor="#333333"
+        android:layout_marginBottom="8dp"/>
+
+    <!-- 通用输入框：保留你当前的配置 -->
+    <EditText
+        android:id="@+id/et_common_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="请输入内容"
+        android:fontFamily="@font/mono"
+        android:textSize="12sp"
         android:visibility="gone"
+        android:layout_marginTop="8dp"
         android:layout_marginBottom="16dp"/>
 
-    <!-- 操作按钮区域 -->
+    <!-- 操作区域：单个下拉按钮 + 确认按钮（输入框显示时展示） -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="end">
 
-        <Button
-            android:id="@+id/btn_rename"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="重命名"
-            android:layout_marginRight="8dp"/>
+        <!-- 下拉选择按钮：改用AppCompatButton -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_operation_select"
+            android:layout_width="60dp"
+            android:layout_height="30dp"
+            android:text="选择操作"
+            android:fontFamily="@font/mono"
+            android:textColor="#FFFFFF"
+            android:textSize="11sp"
+            android:background="@drawable/btn_operation_select_bg"
+            android:paddingHorizontal="0dp"
+            android:paddingVertical="0dp"
+            android:elevation="0dp"
+            android:stateListAnimator="@null"/>
 
-        <Button
-            android:id="@+id/btn_cancel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="取消"/>
+        <!-- 确认按钮：改用AppCompatButton -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_confirm"
+            android:layout_width="60dp"
+            android:layout_height="30dp"
+            android:text="确认"
+            android:fontFamily="@font/mono"
+            android:textColor="#FFFFFF"
+            android:textSize="11sp"
+            android:background="@drawable/btn_confirm_bg"
+            android:paddingHorizontal="0dp"
+            android:paddingVertical="0dp"
+            android:elevation="0dp"
+            android:stateListAnimator="@null"
+            android:visibility="gone"
+            android:layout_marginLeft="10dp"/>
     </LinearLayout>
-
 </LinearLayout>
