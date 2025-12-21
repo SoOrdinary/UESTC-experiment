@@ -24,7 +24,7 @@ object AESUtil {
      * @param key 原始密钥字符串
      * @return 符合 AES 要求的密钥字节数组
      */
-    private fun generateKeyBytes(key: String): ByteArray {
+    fun generateKeyBytes(key: String): ByteArray {
         val keyBytes = key.toByteArray(StandardCharsets.UTF_8)
         val finalKeyBytes = ByteArray(BLOCK_SIZE)
         // 若 keyBytes 长度小于 BLOCK_SIZE，将其复制到 finalKeyBytes 并补 0

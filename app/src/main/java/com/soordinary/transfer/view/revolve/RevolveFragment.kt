@@ -69,6 +69,7 @@ class RevolveFragment : Fragment(R.layout.fragment_revolve) {
             val dialog = RevolveTaskDialog(
                 context = requireContext(),
                 viewModel = viewModel,
+                task = task,
                 taskName = task.name,
                 pathList = realPathList,     // 传入真实解析的路径列表
                 refreshCallback = {
