@@ -8,17 +8,21 @@ import android.view.View
 import android.webkit.MimeTypeMap
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.core.content.FileProvider
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.DownsampleStrategy
 import com.soordinary.transfer.R
 import com.soordinary.transfer.data.room.database.RevolveDatabase
 import com.soordinary.transfer.databinding.FragmentFolderBinding
 import com.soordinary.transfer.repository.RevolveRepository
 import com.soordinary.transfer.view.MainActivity
 import com.soordinary.transfer.view.revolve.RevolveViewModel
+import com.soordinary.transfer.view.user.UserViewModel
 import java.io.File
 
 class FolderFragment : Fragment(R.layout.fragment_folder)  {
@@ -26,6 +30,7 @@ class FolderFragment : Fragment(R.layout.fragment_folder)  {
     private lateinit var binding: FragmentFolderBinding
     private lateinit var folderAdapter: FolderAdapter
     private lateinit var rootPath : String
+    private val userViewModel: UserViewModel by activityViewModels()
     private lateinit var currentPath : String
     private lateinit var filePickerLauncher: ActivityResultLauncher<Array<String>>
     // 声明Dialog实例（可选，按需创建）
@@ -120,6 +125,14 @@ class FolderFragment : Fragment(R.layout.fragment_folder)  {
             layoutManager = LinearLayoutManager(context)
             adapter = folderAdapter
             setHasFixedSize(true)
+        }
+
+        userViewModel.getIconUriLiveData().observe(this@FolderFragment) {
+            Glide.with(iconP.context)
+                .load(it)  // 图片的 URL
+                .downsample(DownsampleStrategy.CENTER_INSIDE) // 根据目标区域缩放图片
+                .placeholder(R.drawable.app_icon)  // 占位图
+                .into(iconP)
         }
     }
 

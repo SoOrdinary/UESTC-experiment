@@ -7,12 +7,15 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.NavigationUI
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.DownsampleStrategy
 import com.soordinary.transfer.BaseActivity
 import com.soordinary.transfer.R
 import com.soordinary.transfer.databinding.ActivityMainBinding
@@ -21,10 +24,13 @@ import com.soordinary.transfer.utils.SystemUtil
 import com.soordinary.transfer.view.folder.FolderFragment
 import com.soordinary.transfer.view.revolve.RevolveFragment
 import com.soordinary.transfer.view.transfer.TransferFragment
+import com.soordinary.transfer.view.user.UserViewModel
 
 class MainActivity : BaseActivity<ActivityMainBinding>() {
     // 定义日志标签，方便过滤日志
     private val TAG = "MainActivity"
+
+    private val userViewModel: UserViewModel by viewModels()
 
     companion object {
         // 静态打开方法，指明打开该类需要哪些参数
@@ -70,6 +76,24 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         val navController = navHostFragment.findNavController()
         NavigationUI.setupWithNavController(binding.navBottom, navController)
+
+        with(binding.navSide){
+            with(NavSideHeaderBinding.bind(getHeaderView(0))) {
+                userViewModel.getIconUriLiveData().observe(this@MainActivity) {
+                    Glide.with(icon.context)
+                        .load(it)  // 图片的 URL
+                        .downsample(DownsampleStrategy.CENTER_INSIDE) // 根据目标区域缩放图片
+                        .placeholder(R.drawable.app_icon)  // 占位图
+                        .into(icon)
+                }
+                userViewModel.getNameLiveData().observe(this@MainActivity) {
+                    name.text = it
+                }
+                userViewModel.getSignatureLiveData().observe(this@MainActivity) {
+                    signature.text = it
+                }
+            }
+        }
     }
 
 

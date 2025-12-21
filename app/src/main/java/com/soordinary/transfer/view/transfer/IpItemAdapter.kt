@@ -1,4 +1,3 @@
-// IpItemAdapter.kt
 package com.soordinary.transfer.view.transfer
 
 import android.view.LayoutInflater
@@ -6,7 +5,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.soordinary.transfer.databinding.FragmentTransferBinding
 import com.soordinary.transfer.databinding.FragmentTransferItemBinding
 
 /**

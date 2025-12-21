@@ -1,6 +1,8 @@
 package com.soordinary.transfer.data.shared
 
 
+import com.soordinary.transfer.R
+import com.soordinary.transfer.UESTCApplication
 import com.tencent.mmkv.MMKV
 
 
@@ -41,11 +43,11 @@ object UserMMKV {
         set(value) { mmkv.encode(USER_ICON_URI, value) }
 
     var userName: String?
-        get() = mmkv.decodeString(USER_NAME, "SoOrdinary")
+        get() = mmkv.decodeString(USER_NAME, UESTCApplication.context.getString(R.string.user_name))
         set(value) { mmkv.encode(USER_NAME, value) }
 
     var userSignature: String?
-        get() = mmkv.decodeString(USER_SIGNATURE, "Tencent School Enterprise Joint Project")
+        get() = mmkv.decodeString(USER_SIGNATURE, UESTCApplication.context.getString(R.string.user_signature))
         set(value) { mmkv.encode(USER_SIGNATURE, value) }
 
     var userPassword: String?
