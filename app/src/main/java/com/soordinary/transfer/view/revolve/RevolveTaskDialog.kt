@@ -18,12 +18,17 @@ import android.widget.Toast
 import androidx.appcompat.widget.AppCompatButton
 import com.soordinary.transfer.R
 import com.soordinary.transfer.data.room.entity.RevolveEntity
-import com.soordinary.transfer.utils.ZipUtils
 import com.soordinary.transfer.utils.encryption.AESUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import net.lingala.zip4j.ZipFile
+import net.lingala.zip4j.model.ZipParameters
+import net.lingala.zip4j.model.enums.AesKeyStrength
+import net.lingala.zip4j.model.enums.CompressionLevel // 关键：补全这个导入
+import net.lingala.zip4j.model.enums.CompressionMethod
+import net.lingala.zip4j.model.enums.EncryptionMethod
 import java.io.File
 import java.util.Locale
 
@@ -177,7 +182,7 @@ class RevolveTaskDialog(
                     }
 
                     // 生成自动编号的ZIP路径
-                    val fullPath = ZipUtils.generateAutoRenamePath(parentPath, taskName, "zip")
+                    val fullPath = getAutoRenamePath(parentPath, taskName, "zip")
                     // 异步执行打包（仅传参，暂不实现具体逻辑）
                     executePackOperation(fullPath, password, validPaths)
                 }
@@ -201,7 +206,7 @@ class RevolveTaskDialog(
                     }
 
                     // 生成自动编号的ZIP路径
-                    val fullPath = ZipUtils.generateAutoRenamePath(parentPath, "${taskName}_压缩", "zip")
+                    val fullPath = getAutoRenamePath(parentPath, "${taskName}_压缩", "zip")
                     // 异步执行压缩（仅传参，暂不实现具体逻辑）
                     executeCompressOperation(fullPath, password, validPaths)
                 }
@@ -225,27 +230,34 @@ class RevolveTaskDialog(
     }
 
     /**
-     * 执行打包操作（异步）- 仅传参，暂不实现具体逻辑
+     * 执行打包操作（异步）- 完整实现ZIP打包逻辑
      * @param targetPath ZIP文件保存路径
      * @param password 加密密码（为空则不加密）
      * @param validPaths 去重后的有效路径列表
      */
     private fun executePackOperation(targetPath: String, password: String, validPaths: List<String>) {
         GlobalScope.launch(Dispatchers.Main) {
-            withContext(Dispatchers.IO) {
-                // 暂不实现具体打包逻辑，仅打印参数（便于后续调试）
-                println("【打包参数】保存路径：$targetPath")
-                println("【打包参数】加密密码：${if (password.isEmpty()) "无" else "已设置"}")
-                println("【打包参数】有效路径数：${validPaths.size}")
-                validPaths.forEachIndexed { index, path ->
-                    println("  有效路径$index：$path")
+            val result = withContext(Dispatchers.IO) {
+                try {
+                    // 执行ZIP打包核心逻辑
+                    packFilesToZip(targetPath, password, validPaths)
+                    true // 打包成功
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    false // 打包失败
                 }
             }
 
-            // 仅提示操作触发，后续可替换为实际打包逻辑
+            // 根据结果显示提示
+            val message = if (result) {
+                "打包完成！已处理${validPaths.size}个路径，保存至$targetPath"
+            } else {
+                "打包失败！请检查路径或权限"
+            }
+
             Toast.makeText(
                 context,
-                "打包操作已触发，待处理${validPaths.size}个有效路径，保存至$targetPath",
+                message,
                 Toast.LENGTH_LONG
             ).show()
             refreshCallback()
@@ -254,32 +266,96 @@ class RevolveTaskDialog(
     }
 
     /**
-     * 执行压缩操作（异步）- 仅传参，暂不实现具体逻辑
+     * 执行压缩操作（异步）- 复用打包逻辑（可根据需要调整压缩级别）
      * @param targetPath ZIP文件保存路径
      * @param password 加密密码（为空则不加密）
      * @param validPaths 去重后的有效路径列表
      */
     private fun executeCompressOperation(targetPath: String, password: String, validPaths: List<String>) {
         GlobalScope.launch(Dispatchers.Main) {
-            withContext(Dispatchers.IO) {
-                // 暂不实现具体压缩逻辑，仅打印参数（便于后续调试）
-                println("【压缩参数】保存路径：$targetPath")
-                println("【压缩参数】加密密码：${if (password.isEmpty()) "无" else "已设置"}")
-                println("【压缩参数】有效路径数：${validPaths.size}")
-                validPaths.forEachIndexed { index, path ->
-                    println("  有效路径$index：$path")
+            val result = withContext(Dispatchers.IO) {
+                try {
+                    // 执行高压缩级别ZIP打包
+                    packFilesToZip(targetPath, password, validPaths, CompressionLevel.ULTRA)
+                    true // 压缩成功
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    false // 压缩失败
                 }
             }
 
-            // 仅提示操作触发，后续可替换为实际压缩逻辑
+            // 根据结果显示提示
+            val message = if (result) {
+                "压缩完成！已处理${validPaths.size}个路径，保存至$targetPath"
+            } else {
+                "压缩失败！请检查路径或权限"
+            }
+
             Toast.makeText(
                 context,
-                "压缩操作已触发，待处理${validPaths.size}个有效路径，保存至$targetPath",
+                message,
                 Toast.LENGTH_LONG
             ).show()
             refreshCallback()
             dismiss()
         }
+    }
+
+    /**
+     * 核心ZIP打包方法
+     * @param targetPath ZIP文件保存路径
+     * @param password 加密密码（为空则不加密）
+     * @param validPaths 待打包的路径列表
+     * @param compressionLevel 压缩级别（默认普通压缩）
+     */
+    private fun packFilesToZip(
+        targetPath: String,
+        password: String,
+        validPaths: List<String>,
+        compressionLevel: CompressionLevel = CompressionLevel.NO_COMPRESSION
+    ) {
+        validPaths.forEachIndexed { index, path ->
+            println("  有效路径$index：$path")
+        }
+
+        // 创建ZipFile实例（支持密码）
+        val zipFile = if (password.isNotEmpty()) {
+            ZipFile(targetPath, password.toCharArray())
+        } else {
+            ZipFile(targetPath)
+        }
+
+        // 配置ZIP参数
+        val zipParameters = ZipParameters().apply {
+            compressionMethod = CompressionMethod.DEFLATE // 压缩方式
+            this.compressionLevel = compressionLevel // 压缩级别
+            if (password.isNotEmpty()) {
+                isEncryptFiles = true
+                encryptionMethod = EncryptionMethod.AES // AES加密
+                aesKeyStrength = AesKeyStrength.KEY_STRENGTH_256 // 256位加密
+            }
+        }
+
+        // 遍历所有有效路径，添加到ZIP包
+        validPaths.forEach { path ->
+            val file = File(path)
+            when {
+                file.isFile -> {
+                    // 添加单个文件
+                    zipFile.addFile(file, zipParameters)
+                }
+                file.isDirectory -> {
+                    // 添加整个文件夹（保持目录结构）
+                    zipFile.addFolder(file, zipParameters)
+                }
+                else -> {
+                    println("路径不存在或不是有效文件/文件夹：$path")
+                }
+            }
+        }
+
+        // 关闭ZIP文件
+        zipFile.close()
     }
 
     /**
@@ -301,7 +377,18 @@ class RevolveTaskDialog(
      * 生成自动编号的文件路径（兼容旧逻辑，实际调用工具类方法）
      */
     private fun getAutoRenamePath(parentPath: String, fileName: String, extension: String): String {
-        return ZipUtils.generateAutoRenamePath(parentPath, fileName, extension)
+        var index = 0
+        var targetPath: String
+        do {
+            val fileNameWithIndex = if (index == 0) {
+                "$fileName.$extension"
+            } else {
+                "$fileName($index).$extension"
+            }
+            targetPath = File(parentPath, fileNameWithIndex).absolutePath
+            index++
+        } while (File(targetPath).exists())
+        return targetPath
     }
 
     /**
@@ -313,7 +400,7 @@ class RevolveTaskDialog(
             return
         }
 
-        val spannable = SpannableStringBuilder()
+        val spannable = android.text.SpannableStringBuilder() // 改用系统自带的SpannableStringBuilder
         pathList.forEachIndexed { index, path ->
             val lineText = "${index + 1}. $path\n"
             val start = spannable.length
@@ -350,14 +437,5 @@ class RevolveTaskDialog(
         editText.isEnabled = false
         editText.setTextColor(Color.RED)
         editText.background = ColorDrawable(Color.TRANSPARENT)
-    }
-
-    /**
-     * 自定义SpannableStringBuilder（兼容旧逻辑）
-     */
-    private class SpannableStringBuilder : android.text.SpannableStringBuilder() {
-        override fun setSpan(what: Any, start: Int, end: Int, flags: Int) {
-            super.setSpan(what, start, end, flags)
-        }
     }
 }

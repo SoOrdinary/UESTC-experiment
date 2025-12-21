@@ -24,17 +24,23 @@ import androidx.lifecycle.viewModelScope
 import com.soordinary.transfer.R
 import com.soordinary.transfer.data.room.entity.RevolveEntity
 import com.soordinary.transfer.view.revolve.RevolveViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
 
 class EditDialog(
     private val context: Context,
     private val filePath: String,
     private val refreshCallback: () -> Unit,
-    // 传入ViewModel获取中转计划
     private val revolveViewModel: RevolveViewModel
 ) : Dialog(context) {
 
@@ -57,15 +63,23 @@ class EditDialog(
         targetFile.parentFile?.absolutePath ?: ""
     }
 
-    // 新增：中转计划相关
+    // 判断是否是ZIP文件（用于控制解密选项是否显示）
+    private val isZipFile: Boolean by lazy { originalFileExtension.equals("zip", ignoreCase = true) }
+
+    // 中转计划相关
     private lateinit var spTransferPlan: Spinner
     private lateinit var planAdapter: ArrayAdapter<String>
     private var transferPlanList = mutableListOf<RevolveEntity>()
     private var selectedPlan: RevolveEntity? = null
 
-    // 操作类型枚举
+    // 新增：独立的ZIP密码输入框
+    private lateinit var etZipPassword: EditText
+    // 原有通用输入框（解密时用于输入目标路径）
+    private lateinit var etCommonInput: EditText
+
+    // 操作类型枚举：新增DECRYPT类型
     enum class OperationType {
-        NONE, RENAME, RESTORE, MIGRATE, DELETE
+        NONE, RENAME, RESTORE, MIGRATE, DELETE, DECRYPT
     }
 
     init {
@@ -83,23 +97,22 @@ class EditDialog(
         val tvSize = view.findViewById<TextView>(R.id.tv_size)
         val tvModifyTime = view.findViewById<TextView>(R.id.tv_modify_time)
 
-        // 原输入框和按钮
-        val etCommonInput = view.findViewById<EditText>(R.id.et_common_input)
+        // 绑定控件：原有通用输入框 + 新增密码输入框
+        etCommonInput = view.findViewById(R.id.et_common_input)
+        etZipPassword = view.findViewById(R.id.et_zip_password)
         val btnOperationSelect = view.findViewById<AppCompatButton>(R.id.btn_operation_select)
         val btnConfirm = view.findViewById<AppCompatButton>(R.id.btn_confirm)
 
-        // 新增：初始化中转计划选择器
+        // 初始化中转计划选择器
         spTransferPlan = view.findViewById(R.id.sp_transfer_plan)
         planAdapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item)
         spTransferPlan.adapter = planAdapter
-        // 初始化时添加提示项
         planAdapter.add("选择中转计划")
-        spTransferPlan.setSelection(0, false) // 默认选中提示项，不触发监听
+        spTransferPlan.setSelection(0, false)
 
         // Spinner选择监听
         spTransferPlan.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                // 索引0是提示项，索引>0才对应真实计划（计划列表索引 = position -1）
                 if (transferPlanList.isNotEmpty() && position > 0) {
                     selectedPlan = transferPlanList[position - 1]
                 } else {
@@ -115,23 +128,29 @@ class EditDialog(
         // 展示文件信息
         showFileInfo(tvName, tvType, tvPath, tvSize, tvModifyTime)
 
-        // ========== 下拉操作选择按钮 ==========
+        // ========== 下拉操作选择按钮（核心修改：新增解密选项） ==========
         btnOperationSelect.setOnClickListener {
             val popupMenu = PopupMenu(context, it)
+            // 添加原有选项
             popupMenu.menu.add(0, 1, 0, "重命名")
             popupMenu.menu.add(0, 2, 1, "移动")
             popupMenu.menu.add(0, 3, 2, "中转")
-            popupMenu.menu.add(0, 4, 3, "删除")
+            // 仅当是ZIP文件时，显示「解密ZIP」选项
+            if (isZipFile) {
+                popupMenu.menu.add(0, 4, 3, "解密ZIP")
+                popupMenu.menu.add(0, 5, 4, "删除")
+            }else{
+                popupMenu.menu.add(0, 5, 4, "删除")
+            }
 
             popupMenu.setOnMenuItemClickListener { menuItem ->
+                // 重置所有输入框样式和状态
                 resetEditTextStyle(etCommonInput)
-                // 重置所有输入区域状态
-                etCommonInput.visibility = View.GONE
-                spTransferPlan.visibility = View.GONE
-                btnConfirm.visibility = View.GONE
+                resetEditTextStyle(etZipPassword)
+                resetAllInputVisibility()
 
                 when (menuItem.itemId) {
-                    1 -> { // 重命名
+                    1 -> { // 重命名：显示通用输入框
                         currentOperation = OperationType.RENAME
                         etCommonInput.hint = "请输入修改文件名"
                         etCommonInput.setText(originalFileNameOnly)
@@ -139,7 +158,7 @@ class EditDialog(
                         etCommonInput.visibility = View.VISIBLE
                         btnConfirm.visibility = View.VISIBLE
                     }
-                    2 -> { // 移动
+                    2 -> { // 移动：显示通用输入框（输入目标地址）
                         currentOperation = OperationType.RESTORE
                         etCommonInput.hint = "请输入移动到的文件夹路径"
                         etCommonInput.setText(originalFolderPath)
@@ -147,15 +166,28 @@ class EditDialog(
                         etCommonInput.visibility = View.VISIBLE
                         btnConfirm.visibility = View.VISIBLE
                     }
-                    3 -> { // 中转 - 核心修改
+                    3 -> { // 中转：显示Spinner
                         currentOperation = OperationType.MIGRATE
                         btnConfirm.visibility = View.VISIBLE
-                        // 隐藏输入框，显示Spinner
                         spTransferPlan.visibility = View.VISIBLE
-                        // 加载中转计划数据
                         loadTransferPlans()
                     }
-                    4 -> { // 删除
+                    4 -> { // 解密ZIP：显示密码输入框 + 通用输入框（目标路径）
+                        currentOperation = OperationType.DECRYPT
+                        // 密码输入框
+                        etZipPassword.hint = "请输入ZIP密码（无密码则留空）"
+                        etZipPassword.setText("")
+                        etZipPassword.visibility = View.VISIBLE
+                        // 通用输入框（目标路径）
+                        etCommonInput.hint = "请输入解密后的保存路径"
+                        val defaultOutputPath = "$originalFolderPath/${originalFileNameOnly}_decrypted"
+                        etCommonInput.setText(defaultOutputPath)
+                        etCommonInput.setSelection(defaultOutputPath.length)
+                        etCommonInput.visibility = View.VISIBLE
+                        // 确认按钮
+                        btnConfirm.visibility = View.VISIBLE
+                    }
+                    5 -> { // 删除：显示通用输入框（提示文本）
                         currentOperation = OperationType.DELETE
                         setupDeleteEditTextStyle(etCommonInput)
                         etCommonInput.setText("确认删除文件？")
@@ -168,7 +200,7 @@ class EditDialog(
             popupMenu.show()
         }
 
-        // ========== 确认按钮 ==========
+        // ========== 确认按钮（新增解密逻辑） ==========
         btnConfirm.setOnClickListener {
             when (currentOperation) {
                 OperationType.RENAME -> {
@@ -205,29 +237,23 @@ class EditDialog(
                     }
                     moveFile(targetDir)
                 }
-                OperationType.MIGRATE -> { // 中转确认逻辑
+                OperationType.MIGRATE -> {
                     val plan = selectedPlan ?: run {
                         Toast.makeText(context, "请选择有效的中转计划", Toast.LENGTH_SHORT).show()
                         return@setOnClickListener
                     }
-                    // 追加文件路径：原value|新路径
                     val originalValue = plan.value ?: ""
                     val newPath = targetFile.absolutePath
-                    // ========== 修复：精确匹配完整路径，避免子路径误判 ==========
-                    // 按|分割所有已存在的路径，过滤空字符串（避免value为空时的空元素）
                     val existingPaths = originalValue.split("|").filter { it.isNotEmpty() }
-                    // 精确判断新路径是否在已存在的路径列表中
                     if (existingPaths.contains(newPath)) {
                         Toast.makeText(context, "该路径已在计划中", Toast.LENGTH_SHORT).show()
                         return@setOnClickListener
                     }
-                    // ========== 原有逻辑 ==========
                     val newValue = if (originalValue.isEmpty()) {
                         newPath
                     } else {
                         "$originalValue|$newPath"
                     }
-                    // 调用ViewModel更新计划
                     revolveViewModel.updateTaskValue(
                         taskId = plan.id,
                         newValue = newValue,
@@ -239,38 +265,154 @@ class EditDialog(
                     refreshCallback()
                     dismiss()
                 }
+                OperationType.DECRYPT -> { // ZIP解密逻辑（读取独立密码输入框 + 通用输入框路径）
+                    // 1. 获取目标路径（通用输入框）
+                    val targetPath = etCommonInput.text.toString().trim()
+                    if (targetPath.isEmpty()) {
+                        Toast.makeText(context, "解密保存路径不能为空", Toast.LENGTH_SHORT).show()
+                        return@setOnClickListener
+                    }
+                    // 2. 获取密码（空则视为无密码）
+                    val password = etZipPassword.text.toString().trim()
+                    // 3. 校验是否是ZIP文件
+                    if (!isZipFile) {
+                        Toast.makeText(context, "当前文件不是ZIP格式，无法解密", Toast.LENGTH_SHORT).show()
+                        return@setOnClickListener
+                    }
+                    // 4. 异步解密（避免主线程阻塞）
+                    revolveViewModel.viewModelScope.launch(Dispatchers.IO) {
+                        val decryptResult = decryptZipFile(password, targetPath)
+                        // 主线程更新UI
+                        withContext(Dispatchers.Main) {
+                            if (decryptResult.first) {
+                                Toast.makeText(context, "ZIP解密成功，保存至：${decryptResult.second}", Toast.LENGTH_LONG).show()
+                                refreshCallback()
+                                dismiss()
+                            } else {
+                                Toast.makeText(context, "解密失败：${decryptResult.second}", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                }
                 OperationType.DELETE -> {
                     deleteFile()
                 }
-                else -> resetState(etCommonInput, btnConfirm)
+                else -> resetAllInputVisibility()
             }
         }
     }
 
-    // ========== 新增：加载中转计划数据 ==========
+    // ========== 核心工具方法 ==========
+    /**
+     * 重置所有输入框/Spinner的可见性
+     */
+    private fun resetAllInputVisibility() {
+        etCommonInput.visibility = View.GONE
+        etZipPassword.visibility = View.GONE
+        spTransferPlan.visibility = View.GONE
+        findViewById<AppCompatButton>(R.id.btn_confirm).visibility = View.GONE
+        currentOperation = OperationType.NONE
+    }
+
+    /**
+     * ZIP解密核心逻辑（适配无密码场景 + 自定义保存路径 + 重名自动加编号）
+     * @param password ZIP密码（空字符串表示无密码）
+     * @param targetPath 用户输入的目标保存路径
+     * @return Pair<是否成功, 结果信息（成功返回最终路径，失败返回错误信息）>
+     */
+    private fun decryptZipFile(password: String, targetPath: String): Pair<Boolean, String> {
+        val finalOutputDir = getUniqueDirectoryPath(targetPath)
+        if (!finalOutputDir.exists() && !finalOutputDir.mkdirs()) {
+            return Pair(false, "无法创建解压目录：${finalOutputDir.absolutePath}")
+        }
+
+        try {
+            val zipFile = net.lingala.zip4j.ZipFile(targetFile)
+            // 有密码则设置密码
+            if (password.isNotEmpty()) {
+                zipFile.setPassword(password.toCharArray())
+            }
+            // 解压全部文件（自动处理重名，也可结合我们的唯一路径逻辑）
+            zipFile.extractAll(finalOutputDir.absolutePath)
+            zipFile.close()
+            return Pair(true, finalOutputDir.absolutePath)
+        } catch (e: net.lingala.zip4j.exception.ZipException) {
+            return Pair(false, when {
+                e.message?.contains("password") == true -> "密码错误或文件未加密"
+                else -> e.message ?: "ZIP解压异常"
+            })
+        } catch (e: Exception) {
+            return Pair(false, e.message ?: "未知异常")
+        }
+    }
+
+    /**
+     * 获取唯一的文件夹路径（重名则追加编号，如：test -> test(1) -> test(2)）
+     */
+    private fun getUniqueDirectoryPath(basePath: String): File {
+        var newFile = File(basePath)
+        var count = 1
+        // 如果路径已存在，循环生成新路径直到唯一
+        while (newFile.exists()) {
+            newFile = File("${basePath}($count)")
+            count++
+        }
+        return newFile
+    }
+
+    /**
+     * 获取唯一的文件路径（重名则追加编号，如：file.txt -> file(1).txt -> file(2).txt）
+     */
+    private fun getUniqueFilePath(baseFile: File): File {
+        if (!baseFile.exists()) {
+            return baseFile
+        }
+
+        val parentDir = baseFile.parentFile ?: return baseFile
+        val fileName = baseFile.name
+        val fileNameWithoutExt = getFileNameWithoutExtension(fileName)
+        val extension = getFileExtension(fileName)
+
+        var count = 1
+        var newFile: File
+        // 生成带编号的文件名
+        do {
+            val newFileName = if (extension.isNotEmpty()) {
+                "$fileNameWithoutExt($count).$extension"
+            } else {
+                "$fileNameWithoutExt($count)"
+            }
+            newFile = File(parentDir, newFileName)
+            count++
+        } while (newFile.exists())
+
+        return newFile
+    }
+
+    /**
+     * 加载中转计划数据
+     */
     private fun loadTransferPlans() {
-        // 使用 viewModelScope 避免内存泄漏
         revolveViewModel.viewModelScope.launch {
             revolveViewModel.observeAllTasks().collect { planList ->
-                // 过滤出中转类型的计划（根据你的TaskType调整，比如 TaskType.TRANSFER）
                 transferPlanList.clear()
                 transferPlanList.addAll(planList)
 
-                // 清空适配器，重新添加提示项 + 计划列表
                 planAdapter.clear()
-                planAdapter.add("选择中转计划") // 固定提示项
-
+                planAdapter.add("选择中转计划")
                 if (transferPlanList.isNotEmpty()) {
                     transferPlanList.forEach { plan ->
                         planAdapter.add(plan.name)
                     }
                 }
-                // 默认选中提示项
                 spTransferPlan.setSelection(0, false)
             }
         }
     }
 
+    /**
+     * DP转PX
+     */
     private fun dp2px(context: Context, dp: Int): Int {
         return TypedValue.applyDimension(
             TypedValue.COMPLEX_UNIT_DIP,
@@ -279,26 +421,27 @@ class EditDialog(
         ).toInt()
     }
 
-    private fun resetState(editText: EditText, confirmBtn: AppCompatButton) {
-        editText.visibility = View.GONE
-        confirmBtn.visibility = View.GONE
-        currentOperation = OperationType.NONE
-        editText.setText("")
-        resetEditTextStyle(editText)
-    }
-
+    /**
+     * 重置输入框样式
+     */
     private fun resetEditTextStyle(editText: EditText) {
         editText.isEnabled = true
         editText.setTextColor(Color.BLACK)
         editText.background = editText.context.resources.getDrawable(android.R.drawable.edit_text, null)
     }
 
+    /**
+     * 设置删除状态输入框样式
+     */
     private fun setupDeleteEditTextStyle(editText: EditText) {
         editText.isEnabled = false
         editText.setTextColor(Color.RED)
         editText.background = ColorDrawable(Color.TRANSPARENT)
     }
 
+    /**
+     * 展示文件信息
+     */
     private fun showFileInfo(
         tvName: TextView,
         tvType: TextView,
@@ -333,6 +476,9 @@ class EditDialog(
         tvModifyTime.visibility = View.VISIBLE
     }
 
+    /**
+     * 创建带样式的 Spannable 文本
+     */
     private fun createSpannableText(label: String, value: String): SpannableString {
         val spannable = SpannableString(label + value)
         val labelEnd = label.length
@@ -342,6 +488,9 @@ class EditDialog(
         return spannable
     }
 
+    /**
+     * 获取无后缀的文件名
+     */
     private fun getFileNameWithoutExtension(fileName: String): String {
         val lastDotIndex = fileName.lastIndexOf(".")
         return if (lastDotIndex > 0 && lastDotIndex < fileName.length - 1) {
@@ -351,6 +500,9 @@ class EditDialog(
         }
     }
 
+    /**
+     * 获取文件后缀
+     */
     private fun getFileExtension(fileName: String): String {
         val lastDotIndex = fileName.lastIndexOf(".")
         return if (lastDotIndex > 0 && lastDotIndex < fileName.length - 1) {
@@ -360,6 +512,9 @@ class EditDialog(
         }
     }
 
+    /**
+     * 格式化文件大小
+     */
     private fun formatFileSize(size: Long): String {
         return when {
             size < 1024 -> "$size B"
@@ -369,6 +524,9 @@ class EditDialog(
         }
     }
 
+    /**
+     * 重命名文件
+     */
     private fun renameFile(newName: String) {
         val newFile = File(targetFile.parentFile, newName)
         if (newFile.exists()) {
@@ -385,6 +543,9 @@ class EditDialog(
         }
     }
 
+    /**
+     * 移动文件
+     */
     private fun moveFile(targetDir: File) {
         val targetFile = File(targetDir, this.targetFile.name)
         if (targetFile.exists()) {
@@ -402,6 +563,9 @@ class EditDialog(
         }
     }
 
+    /**
+     * 删除文件（递归删除文件夹）
+     */
     private fun deleteFile() {
         fun deleteRecursively(file: File): Boolean {
             if (file.isDirectory) {

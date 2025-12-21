@@ -5,7 +5,7 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <!-- 文件基本信息区域：保留你当前的配置（字号12sp、间距8dp等） -->
+    <!-- 文件基本信息区域：保留原有配置 -->
     <TextView
         android:id="@+id/tv_name"
         android:layout_width="match_parent"
@@ -51,7 +51,7 @@
         android:textColor="#333333"
         android:layout_marginBottom="8dp"/>
 
-    <!-- 通用输入框：保留你当前的配置 -->
+    <!-- 原有通用输入框：用于重命名/移动的地址输入 -->
     <EditText
         android:id="@+id/et_common_input"
         android:layout_width="match_parent"
@@ -61,8 +61,22 @@
         android:textSize="12sp"
         android:visibility="gone"
         android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"/>
+
+    <!-- 新增：独立的ZIP密码输入框（仅解密时显示） -->
+    <EditText
+        android:id="@+id/et_zip_password"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="请输入ZIP密码（无密码则留空）"
+        android:fontFamily="@font/mono"
+        android:textSize="12sp"
+        android:inputType="textPassword"
+        android:visibility="gone"
+        android:layout_marginTop="8dp"
         android:layout_marginBottom="16dp"/>
 
+    <!-- 中转计划Spinner -->
     <Spinner
         android:id="@+id/sp_transfer_plan"
         android:layout_width="match_parent"
@@ -71,14 +85,13 @@
         android:layout_marginTop="8dp"
         android:layout_marginBottom="16dp" />
 
-    <!-- 操作区域：单个下拉按钮 + 确认按钮（输入框显示时展示） -->
+    <!-- 操作区域：保留原有配置 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="end">
 
-        <!-- 下拉选择按钮：改用AppCompatButton -->
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btn_operation_select"
             android:layout_width="60dp"
@@ -93,7 +106,6 @@
             android:elevation="0dp"
             android:stateListAnimator="@null"/>
 
-        <!-- 确认按钮：改用AppCompatButton -->
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btn_confirm"
             android:layout_width="60dp"
