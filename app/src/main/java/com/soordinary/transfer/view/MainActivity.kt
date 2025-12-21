@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import androidx.activity.enableEdgeToEdge
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -18,6 +20,7 @@ import com.soordinary.transfer.databinding.NavSideHeaderBinding
 import com.soordinary.transfer.utils.SystemUtil
 import com.soordinary.transfer.view.folder.FolderFragment
 import com.soordinary.transfer.view.revolve.RevolveFragment
+import com.soordinary.transfer.view.transfer.TransferFragment
 
 class MainActivity : BaseActivity<ActivityMainBinding>() {
     // 定义日志标签，方便过滤日志
@@ -65,7 +68,6 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
 
         // 获取一些必要的组件实例
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        val sideHeaderBinding = NavSideHeaderBinding.bind(navSide.getHeaderView(0))
         val navController = navHostFragment.findNavController()
         NavigationUI.setupWithNavController(binding.navBottom, navController)
     }
@@ -73,6 +75,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
 
     private fun ActivityMainBinding.initClick() {
 
+        val sideHeaderBinding = NavSideHeaderBinding.bind(navSide.getHeaderView(0))
         // 点击侧边栏的某一菜单后回调Fragment自定义好的逻辑，然后关闭侧边栏并选中该菜单
         navSide.setNavigationItemSelectedListener {
             val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
@@ -91,6 +94,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                     when (val fragment = navHostFragment.childFragmentManager.fragments[0]) {
                         is FolderFragment -> fragment.showCreateFolderDialog()
                         is RevolveFragment -> fragment.showCreateTaskDialog()
+                        is TransferFragment -> fragment.showCreateIpDialog()
                         else -> {}
                     }
                     false
@@ -98,6 +102,21 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                 // 其他按钮默认导航
                 else -> NavigationUI.onNavDestinationSelected(item, navController)
             }
+        }
+
+        sideHeaderBinding.searchTask.setOnEditorActionListener { v, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_SEARCH) {
+                if (v.text.isNullOrEmpty()) return@setOnEditorActionListener true
+                val fragment = navHostFragment.childFragmentManager.fragments[0]
+                if (fragment is FolderFragment) fragment.searchByName(v.text.toString().trim())
+                v.text = ""
+                // 关闭软键盘
+                val imm = v.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(v.windowToken, 0)
+                // 关闭侧边栏
+                layoutMain.closeDrawers()
+            }
+            true
         }
     }
 

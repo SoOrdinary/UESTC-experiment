@@ -5,6 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <!-- 顶部工具栏 -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -25,6 +26,55 @@
 
     </androidx.appcompat.widget.Toolbar>
 
+    <!-- 新增：CardView包裹IP显示和接收按钮 -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="5dp"
+        android:layout_marginVertical="8dp"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="4dp"
+        app:cardUseCompatPadding="true">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="12dp"
+            android:gravity="center_vertical">
+
+            <!-- 显示自身IP的TextView -->
+            <TextView
+                android:id="@+id/tv_self_ip"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="本机IP: 192.168.1.100"
+                android:textColor="@android:color/black"
+                android:fontFamily="@font/mono"
+                android:textSize="14sp"
+                android:layout_marginEnd="10dp"/>
+
+            <!-- 接收数据按钮 -->
+            <Button
+                android:id="@+id/btn_receive_data"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="接收数据"
+                android:textSize="14sp"
+                android:fontFamily="@font/mono"
+                android:backgroundTint="@color/nav_background"
+                android:textColor="@android:color/black"/>
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/ip_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginHorizontal="15dp" />
 
 </LinearLayout>

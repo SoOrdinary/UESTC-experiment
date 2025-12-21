@@ -86,13 +86,19 @@ class FolderFragment : Fragment(R.layout.fragment_folder)  {
             (requireActivity() as MainActivity).binding.layoutMain.openDrawer(GravityCompat.START)
         }
 
+        refresh.setOnClickListener {
+            currentPath =  "/"
+            updateFilePathDisplay()
+            loadFolderList()
+        }
+
         folderAdapter = FolderAdapter(
             fragment = this@FolderFragment,
             folderList = emptyList(),
             onDirClick = { newPath ->
                 currentPath = FolderTreeLoader.getRelativePath(newPath)
                 updateFilePathDisplay()
-                loadFolderList()
+                loadFolderList() // 进入子文件夹时加载完整列表
             },
             onFileClick = { openFileWithSystemChooser(it) },
             onLongClick = {
@@ -130,7 +136,7 @@ class FolderFragment : Fragment(R.layout.fragment_folder)  {
     }
 
     /**
-     * 加载文件列表
+     * 加载文件列表（完整列表，无筛选）
      */
     private fun loadFolderList() {
         Thread {
@@ -206,6 +212,32 @@ class FolderFragment : Fragment(R.layout.fragment_folder)  {
             filePickerLauncher = filePickerLauncher
         )
         createFolderDialog?.show()
+    }
+
+    /**
+     * 根据文件名筛选文件（直接读取文件系统，无状态变量）
+     * @param keyword 搜索关键词（已去除首尾空格）
+     */
+    fun searchByName(keyword: String) {
+        // 开启子线程读取文件系统，避免阻塞UI
+        Thread {
+            // 1. 读取当前路径下的所有文件
+            val allFiles = FolderTreeLoader.loadFolderList("$rootPath$currentPath")
+            // 2. 根据关键词筛选
+            val filteredFiles = if (keyword.isBlank()) {
+                // 关键词为空，返回全部文件
+                allFiles
+            } else {
+                // 过滤：名称包含关键词（忽略大小写）
+                allFiles.filter { file ->
+                    file.name.lowercase().contains(keyword.lowercase())
+                }
+            }
+            // 3. 在UI线程更新列表
+            activity?.runOnUiThread {
+                folderAdapter.updateData(filteredFiles)
+            }
+        }.start()
     }
 
     /**

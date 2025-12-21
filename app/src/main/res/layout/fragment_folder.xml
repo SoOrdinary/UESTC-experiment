@@ -33,7 +33,7 @@
             android:textSize="13sp" />
 
         <ImageView
-            android:id="@+id/task_show"
+            android:id="@+id/refresh"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_gravity="right"
