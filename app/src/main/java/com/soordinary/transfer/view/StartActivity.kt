@@ -20,7 +20,6 @@ class StartActivity : BaseActivity<ActivityStartBinding>() {
 
     private val viewModel: UserViewModel by viewModels()
     private var currentPassword: String? = null
-    private lateinit var serviceIntent: Intent
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

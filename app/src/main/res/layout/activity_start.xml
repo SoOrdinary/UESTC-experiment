@@ -38,7 +38,7 @@
         android:layout_height="wrap_content"
         android:background="@drawable/app_password_input"
         android:gravity="center"
-        android:hint="input your password"
+        android:hint="输入你的密码"
         android:inputType="numberPassword"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
