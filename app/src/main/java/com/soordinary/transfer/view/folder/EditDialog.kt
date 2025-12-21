@@ -180,9 +180,8 @@ class EditDialog(
                         etZipPassword.visibility = View.VISIBLE
                         // 通用输入框（目标路径）
                         etCommonInput.hint = "请输入解密后的保存路径"
-                        val defaultOutputPath = "$originalFolderPath/${originalFileNameOnly}_decrypted"
-                        etCommonInput.setText(defaultOutputPath)
-                        etCommonInput.setSelection(defaultOutputPath.length)
+                        etCommonInput.setText(originalFolderPath)
+                        etCommonInput.setSelection(originalFolderPath.length)
                         etCommonInput.visibility = View.VISIBLE
                         // 确认按钮
                         btnConfirm.visibility = View.VISIBLE
@@ -267,7 +266,7 @@ class EditDialog(
                 }
                 OperationType.DECRYPT -> { // ZIP解密逻辑（读取独立密码输入框 + 通用输入框路径）
                     // 1. 获取目标路径（通用输入框）
-                    val targetPath = etCommonInput.text.toString().trim()
+                    val targetPath = etCommonInput.text.toString().trim()+"/${originalFileNameOnly}_decrypted"
                     if (targetPath.isEmpty()) {
                         Toast.makeText(context, "解密保存路径不能为空", Toast.LENGTH_SHORT).show()
                         return@setOnClickListener

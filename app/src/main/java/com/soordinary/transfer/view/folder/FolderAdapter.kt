@@ -115,6 +115,9 @@ class FolderAdapter(
          */
         private fun getFileIconRes(type: FileEntity.FileType, extension: String): Int {
             // todo:临时使用app_icon，后续替换为实际图标
+            if(type == FileEntity.FileType.PARENTDIRECTORY || type == FileEntity.FileType.DIRECTORY){
+                return R.drawable.folder
+            }
             return R.drawable.app_icon
         }
 
