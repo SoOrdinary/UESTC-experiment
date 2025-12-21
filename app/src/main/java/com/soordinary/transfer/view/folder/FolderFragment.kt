@@ -11,10 +11,14 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.soordinary.transfer.R
+import com.soordinary.transfer.data.room.database.RevolveDatabase
 import com.soordinary.transfer.databinding.FragmentFolderBinding
+import com.soordinary.transfer.repository.RevolveRepository
 import com.soordinary.transfer.view.MainActivity
+import com.soordinary.transfer.view.revolve.RevolveViewModel
 import java.io.File
 
 class FolderFragment : Fragment(R.layout.fragment_folder)  {
@@ -26,6 +30,18 @@ class FolderFragment : Fragment(R.layout.fragment_folder)  {
     private lateinit var filePickerLauncher: ActivityResultLauncher<Array<String>>
     // 声明Dialog实例（可选，按需创建）
     private var createFolderDialog: CreateFolderDialog? = null
+    // 共享ViewModel（Activity作用域）
+    private val revolveViewModel: RevolveViewModel by activityViewModels {
+        object : androidx.lifecycle.ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                // 初始化数据库和仓库（确保ApplicationContext，避免内存泄漏）
+                val database = RevolveDatabase.getDatabase(requireContext().applicationContext)
+                val repository = RevolveRepository(database.revolveDao())
+                return RevolveViewModel(repository) as T
+            }
+        }
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -86,7 +102,8 @@ class FolderFragment : Fragment(R.layout.fragment_folder)  {
                     it,
                     {
                         loadFolderList()
-                    }
+                    },
+                    revolveViewModel
                 )
                 editDialog.show()
             },

@@ -30,6 +30,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:text="创建任务"
+        android:textColor="@color/black"
         app:layout_constraintTop_toBottomOf="@id/sp_task_type"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -5,80 +5,68 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <!-- 文件基本信息区域：保留你当前的配置（字号12sp、间距8dp等） -->
+    <!-- 路径列表标题 -->
     <TextView
-        android:id="@+id/tv_name"
+        android:id="@+id/tv_paths_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:text="待处理路径列表："
         android:fontFamily="@font/mono"
         android:textSize="12sp"
         android:textColor="#333333"
         android:layout_marginBottom="8dp"/>
 
-    <TextView
-        android:id="@+id/tv_type"
+    <!-- 可滑动的路径列表区域 -->
+    <ScrollView
+        android:id="@+id/sv_paths_list"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/mono"
-        android:textSize="12sp"
-        android:textColor="#333333"
-        android:layout_marginBottom="8dp"/>
+        android:layout_height="250dp"
+        android:background="#f5f5f5"
+        android:padding="10dp"
+        android:layout_marginBottom="8dp">
 
-    <TextView
-        android:id="@+id/tv_path"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/mono"
-        android:textSize="12sp"
-        android:textColor="#333333"
-        android:layout_marginBottom="8dp"/>
+        <TextView
+            android:id="@+id/tv_paths_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/mono"
+            android:textSize="12sp"
+            android:lineSpacingExtra="4dp"
+            android:textColor="#333333"/>
+    </ScrollView>
 
-    <TextView
-        android:id="@+id/tv_size"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/mono"
-        android:textSize="12sp"
-        android:textColor="#333333"
-        android:layout_marginBottom="8dp"/>
-
-    <TextView
-        android:id="@+id/tv_modify_time"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/mono"
-        android:textSize="12sp"
-        android:textColor="#333333"
-        android:layout_marginBottom="8dp"/>
-
-    <!-- 通用输入框：保留你当前的配置 -->
+    <!-- 目标路径输入框 -->
     <EditText
         android:id="@+id/et_common_input"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="请输入内容"
+        android:hint="请输入目标路径"
+        android:fontFamily="@font/mono"
+        android:textSize="12sp"
+        android:visibility="gone"
+        android:layout_marginTop="8dp"/>
+
+    <!-- 新增：密码输入框（默认隐藏） -->
+    <EditText
+        android:id="@+id/et_password"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="请输入密码"
+        android:inputType="textPassword"
         android:fontFamily="@font/mono"
         android:textSize="12sp"
         android:visibility="gone"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="16dp"/>
 
-    <Spinner
-        android:id="@+id/sp_transfer_plan"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="16dp" />
-
-    <!-- 操作区域：单个下拉按钮 + 确认按钮（输入框显示时展示） -->
+    <!-- 操作区域：小尺寸按钮 + 紧凑布局 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="end">
 
-        <!-- 下拉选择按钮：改用AppCompatButton -->
+        <!-- 操作选择按钮（下拉菜单）：小尺寸 -->
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btn_operation_select"
             android:layout_width="60dp"
@@ -93,7 +81,7 @@
             android:elevation="0dp"
             android:stateListAnimator="@null"/>
 
-        <!-- 确认按钮：改用AppCompatButton -->
+        <!-- 确认按钮：小尺寸、默认隐藏 -->
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btn_confirm"
             android:layout_width="60dp"
@@ -110,4 +98,5 @@
             android:visibility="gone"
             android:layout_marginLeft="10dp"/>
     </LinearLayout>
+
 </LinearLayout>

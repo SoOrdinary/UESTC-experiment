@@ -49,8 +49,8 @@ class RevolveFragment : Fragment(R.layout.fragment_revolve) {
         // 观察数据库数据变化
         observeTaskData()
 
-        // 首次加载插入示例数据（测试用，正式环境删除）
-        //insertSampleData()
+        // 移除：删除测试数据插入代码
+        // insertSampleData()
     }
 
     /**
@@ -60,13 +60,25 @@ class RevolveFragment : Fragment(R.layout.fragment_revolve) {
         // 初始化适配器（初始空数据）
         revolveAdapter = RevolveAdapter(revolveList = emptyList())
 
-        // 设置Adapter点击/长按回调
-        revolveAdapter.setOnItemClickListener { task ->
-            Toast.makeText(requireContext(), "点击了：${task.name}", Toast.LENGTH_SHORT).show()
-        }
-
+        // ========== 核心修改：移除测试数据，使用真实解析的路径列表 ==========
         revolveAdapter.setOnItemLongClickListener { task ->
-            showDeleteConfirm(task)
+            // 从选中的中转计划的value字段解析真实路径列表（按|分割）
+            val realPathList = parsePathListFromTask(task)
+
+            // 实例化弹窗并传入真实路径列表
+            val dialog = RevolveTaskDialog(
+                context = requireContext(),
+                viewModel = viewModel,
+                taskName = task.name,
+                pathList = realPathList,     // 传入真实解析的路径列表
+                refreshCallback = {
+                    Toast.makeText(requireContext(), "操作完成，已刷新", Toast.LENGTH_SHORT).show()
+                    // 刷新列表（可选：重新获取数据更新UI）
+                    observeTaskData()
+                }
+            )
+            dialog.show() // 显示弹窗
+
             true // 消费长按事件
         }
 
@@ -74,6 +86,26 @@ class RevolveFragment : Fragment(R.layout.fragment_revolve) {
         with(binding.revolveList) {
             layoutManager = GridLayoutManager(context, 2)
             adapter = revolveAdapter
+        }
+    }
+
+    /**
+     * 从RevolveEntity的value字段解析路径列表（按|分割）
+     * @param task 选中的中转计划实体
+     * @return 解析后的路径列表（空列表则返回提示文本）
+     */
+    private fun parsePathListFromTask(task: RevolveEntity): List<String> {
+        // 1. 获取value字段，为空则返回空列表提示
+        val value = task.value ?: return listOf("该计划暂无关联文件路径")
+
+        // 2. 按|分割路径，过滤空字符串（避免分割后出现空元素）
+        val pathList = value.split("|").filter { it.isNotEmpty() }
+
+        // 3. 无有效路径时返回提示
+        return if (pathList.isEmpty()) {
+            listOf("该计划暂无关联文件路径")
+        } else {
+            pathList
         }
     }
 
@@ -92,35 +124,9 @@ class RevolveFragment : Fragment(R.layout.fragment_revolve) {
     }
 
     /**
-     * 插入示例数据到数据库（测试用）
+     * 移除：删除测试数据插入方法
      */
-    private fun insertSampleData() {
-        val sampleList = listOf(
-            RevolveEntity(
-                name = "打包文档A",
-                type = RevolveEntity.TaskType.PACK,
-                coverUri = Uri.parse("android.resource://com.soordinary.transfer/drawable/app_icon").toString(),
-                value = "2025-12-20 10:00:00"
-            ),
-            RevolveEntity(
-                name = "加密视频B",
-                type = RevolveEntity.TaskType.ENCRYPTION,
-                coverUri = Uri.parse("android.resource://com.soordinary.transfer/drawable/app_icon").toString(),
-                value = "2025-12-20 11:00:00"
-            ),
-            RevolveEntity(
-                name = "传输文件C",
-                type = RevolveEntity.TaskType.TRANSFER,
-                coverUri = Uri.parse("android.resource://com.soordinary.transfer/drawable/app_icon").toString(),
-                value = "2025-12-20 12:00:00"
-            )
-        )
-
-        // 调用ViewModel插入数据
-        viewModel.insertTasks(sampleList) { errorMsg ->
-            Toast.makeText(requireContext(), "示例数据插入失败：$errorMsg", Toast.LENGTH_SHORT).show()
-        }
-    }
+    // private fun insertSampleData() { ... }
 
     /**
      * 长按删除确认（简化版，可替换为Dialog）
@@ -141,9 +147,8 @@ class RevolveFragment : Fragment(R.layout.fragment_revolve) {
             lifecycleScope.launch {
                 try {
                     viewModel.insertTask(name,type,cover,value)
-                    //Toast.makeText(requireContext(), "任务创建成功", Toast.LENGTH_SHORT).show()
                 } catch (e: Exception) {
-                    //Toast.makeText(requireContext(), "创建失败：${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "创建失败：${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
         }.show()

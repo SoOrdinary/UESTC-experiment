@@ -86,7 +86,7 @@ class CreateRevolveDialog(
             ?: RevolveEntity.TaskType.PACK
 
         // 5. 通过回调传递实体并关闭弹窗
-        onTaskCreated.invoke(taskName,taskType,"","value")
+        onTaskCreated.invoke(taskName,taskType,"","")
         dismiss()
     }
 }
