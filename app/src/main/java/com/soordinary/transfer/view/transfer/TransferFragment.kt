@@ -1,7 +1,6 @@
 package com.soordinary.transfer.view.transfer
 
 import android.app.Dialog
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,13 +11,10 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.soordinary.transfer.R
-import com.soordinary.transfer.data.network.socket.DataTransferNew
 import com.soordinary.transfer.data.room.database.RevolveDatabase
 import com.soordinary.transfer.databinding.DialogDataTransferBinding
-import com.soordinary.transfer.databinding.DialogDataTransferReceiveBinding
 import com.soordinary.transfer.repository.RevolveRepository
 import com.soordinary.transfer.utils.NetworkUtil
-import com.soordinary.transfer.utils.encryption.MD5Util
 import com.soordinary.transfer.view.revolve.RevolveViewModel
 import com.soordinary.transfer.view.user.UserViewModel
 

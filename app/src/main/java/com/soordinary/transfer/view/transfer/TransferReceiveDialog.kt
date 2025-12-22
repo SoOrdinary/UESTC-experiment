@@ -93,7 +93,9 @@ class TransferReceiveDialog(
             activity,
             ipItem.ip,
             8888,
-            MD5Util.encryptByMD5(ipItem.password), binding.newLog,
+            MD5Util.encryptByMD5(ipItem.password),
+            binding.receiveLog,
+            receivePath,
             {
                 // 接收完成后恢复可取消状态
                 setCancelable(true)

@@ -28,7 +28,7 @@ import kotlin.jvm.Throws
 /**
  * 基于局域网的服务器，数据传输的定制流程
  */
-class DataTransferOld(private val activity: Activity, private val oldPort: Int, private val newPasswordMAD5: String, private val logView: TextView, private val end: () -> Unit) {
+class DataTransferOld(private val activity: Activity, private val oldPort: Int, private val newPasswordMAD5: String, private val logView: TextView,private val validPaths: List<String>, private val end: () -> Unit) {
 
     private lateinit var serverSocket: ServerSocket
     private lateinit var oldSocket: Socket
@@ -142,13 +142,13 @@ class DataTransferOld(private val activity: Activity, private val oldPort: Int, 
                     // 获取同步量
                     tempCount = receivedFileCount
                     // 填写需要传过去的文件或文件夹,基于包名的相对路径
-                    val fileList = listOf("cache/task_photo_cache", "cache/user_icon_cache", "databases", "shared_prefs")
+                    val fileList = validPaths
                     for (subFile in fileList) {
-                        val file = File(activity.dataDir, subFile)
+                        val file = File(subFile)
                         if (file.exists() && file.isDirectory) {
-                            sendFolderContents(file, output)
+                            sendFolderContents(file, output, file.name)
                         } else if (file.isFile) {
-                            sendSingleFile(file, output)
+                            sendSingleFile(file, output , "")
                         }
                     }
                     output.write("completed~".toByteArray(StandardCharsets.UTF_8))
@@ -349,14 +349,14 @@ class DataTransferOld(private val activity: Activity, private val oldPort: Int, 
      */
 
     // 递归发送文件夹内容
-    private fun sendFolderContents(folder: File, outputStream: OutputStream) {
+    private fun sendFolderContents(folder: File, outputStream: OutputStream , prefixPath:String) {
         val files = folder.listFiles()
         if (files != null) {
             for (file in files) {
                 if (file.isFile) {
-                    sendSingleFile(file, outputStream)
+                    sendSingleFile(file, outputStream , prefixPath)
                 } else if (file.isDirectory) {
-                    sendFolderContents(file, outputStream)
+                    sendFolderContents(file, outputStream , prefixPath + File.separator + file.name)
                 }
             }
         }
@@ -364,7 +364,7 @@ class DataTransferOld(private val activity: Activity, private val oldPort: Int, 
 
     // 发送单个文件
     @Throws(java.io.IOException::class)
-    private fun sendSingleFile(file: File, outputStream: OutputStream) {
+    private fun sendSingleFile(file: File, outputStream: OutputStream , prefixPath:String) {
         // 已经同步的文件不再发送
         if(tempCount>0){
             tempCount--
@@ -373,8 +373,12 @@ class DataTransferOld(private val activity: Activity, private val oldPort: Int, 
         addLog("------")
         // 传输每个文件的读取标志，用来检测乱序覆盖
         outputStream.write("SoOrdinary".toByteArray(StandardCharsets.UTF_8))
-        // 获取文件相对于根文件夹的相对路径
-        val relativePath = file.absolutePath.removePrefix(activity.dataDir.absolutePath + File.separator)
+        // 获取文件的相对路径
+        val relativePath = if (prefixPath.isEmpty()) {
+            file.name // 空前缀直接返回文件名，避免出现 "/文件名"
+        } else {
+            prefixPath + File.separator + file.name // 非空前缀正常拼接
+        }
         val relativePathBytes = relativePath.toByteArray(StandardCharsets.UTF_8)
         val relativePathLength = relativePathBytes.size
         outputStream.write(intToByteArray(relativePathLength))

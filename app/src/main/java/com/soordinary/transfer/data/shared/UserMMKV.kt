@@ -39,7 +39,7 @@ object UserMMKV {
     }
 
     var userIconUri: String?
-        get() = mmkv.decodeString(USER_ICON_URI, "android.resource://com.todo.android/drawable/app_icon")
+        get() = mmkv.decodeString(USER_ICON_URI, "android.resource://com.soordinary.transfer/drawable/app_icon")
         set(value) { mmkv.encode(USER_ICON_URI, value) }
 
     var userName: String?

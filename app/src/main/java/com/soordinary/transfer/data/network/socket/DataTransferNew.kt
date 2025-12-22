@@ -27,7 +27,7 @@ import java.security.PublicKey
 /**
  * 基于局域网的客户端，数据传输的定制流程
  */
-class DataTransferNew(private val activity: Activity, private val oldIP: String, private val oldPort: Int, private val oldPasswordMAD5: String, private val logView: TextView, private val end: () -> Unit) {
+class DataTransferNew(private val activity: Activity, private val oldIP: String, private val oldPort: Int, private val oldPasswordMAD5: String, private val logView: TextView,private val receivePath: String,private val end: () -> Unit) {
 
     private lateinit var newSocket: Socket
 
@@ -334,9 +334,7 @@ class DataTransferNew(private val activity: Activity, private val oldIP: String,
                 val fileSymbolString = String(fileSymbol, Charsets.UTF_8)
                 if (fileSymbolString != "SoOrdinary") {
                     if (fileSymbolString == "completed~") {
-                        addLog("数据同步完成,重启软件可完成更新")
-                        UserMMKV.userPassword = ""
-                        addLog("软件密码已重置")
+                        addLog("数据同步完成")
                         outputStream.write(0.toFixedLengthString(8).toByteArray(StandardCharsets.UTF_8))
                         isTLSFlag = false
                         break
@@ -361,7 +359,7 @@ class DataTransferNew(private val activity: Activity, private val oldIP: String,
                 val fileLength = byteArrayToLong(fileLengthBytes)
                 addLog("文件大小：${fileLength}B")
                 // 创建文件保存路径
-                val file = File(activity.dataDir, relativePath)
+                val file = File(receivePath, relativePath)
                 file.parentFile?.mkdirs()
                 // 保存文件内容（未加密）
 //                var remainToRead: Long = fileLength
