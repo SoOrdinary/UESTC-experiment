@@ -359,7 +359,7 @@ class DataTransferNew(private val activity: Activity, private val oldIP: String,
                 val fileLength = byteArrayToLong(fileLengthBytes)
                 addLog("文件大小：${fileLength}B")
                 // 创建文件保存路径
-                val file = File(receivePath, relativePath)
+                val file = getUniqueFilePath(receivePath, relativePath)
                 file.parentFile?.mkdirs()
                 // 保存文件内容（未加密）
 //                var remainToRead: Long = fileLength
@@ -449,4 +449,30 @@ class DataTransferNew(private val activity: Activity, private val oldIP: String,
             str.take(length)
         }
     }
+
+    private fun getUniqueFilePath(baseDir: String, originalRelativePath: String): File {
+        // 1. 拼接基础目录和原始相对路径，得到初始文件对象
+        val originalFile = File(baseDir, originalRelativePath)
+        // 2. 分离目录、文件名、扩展名
+        val parentDir = originalFile.parentFile ?: originalFile.parentFile
+        val originalFileName = originalFile.name
+
+        // 拆分文件名和扩展名（处理 "test.txt" → 文件名"test"，扩展名"txt"；处理 "test" → 文件名"test"，扩展名""）
+        val dotIndex = originalFileName.lastIndexOf('.')
+        val fileName = if (dotIndex > 0) originalFileName.substring(0, dotIndex) else originalFileName
+        val extension = if (dotIndex > 0) originalFileName.substring(dotIndex) else ""
+
+        // 3. 循环检查文件是否存在，生成唯一文件名
+        var counter = 1
+        var uniqueFile = originalFile
+        while (uniqueFile.exists()) {
+            // 拼接带编号的文件名：test → test1.txt，test.txt → test1.txt
+            val newFileName = "$fileName$counter$extension"
+            uniqueFile = File(parentDir, newFileName)
+            counter++
+        }
+
+        return uniqueFile
+    }
+
 }
