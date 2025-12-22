@@ -332,10 +332,10 @@ class UserFragment : Fragment(R.layout.fragment_user) {
                  提取码: 待更新
                  
                  gitee链接
-                 https://gitee.com/ly0919/UESTC-experiment/releases/download/latest/随迁.zip
+                 https://gitee.com/ly0919/UESTC-experiment/releases/download/latest/transfer.zip
                  
                  github链接
-                 https://github.com/SoOrdinary/UESTC-experiment/releases/download/latest/随迁.zip
+                 https://github.com/SoOrdinary/UESTC-experiment/releases/download/latest/transfer.zip
                  """.trimIndent()
 
             // 创建 Intent 来分享 URL
@@ -468,9 +468,9 @@ class UserFragment : Fragment(R.layout.fragment_user) {
     private fun startDownloadService() {
         DownloadService.serviceStart(
             requireActivity(),
-            "https://gitee.com/ly0919/UESTC-experiment/releases/download/lastest/随迁.apk",
+            "https://gitee.com/ly0919/UESTC-experiment/releases/download/lastest/transfer.apk",
             // todo：发版后新增改动只能继续往上加code再发，否则用户下载断点续传会合并出bug
-            "随迁_Version${versionCode}.apk",
+            "transfer_Version${versionCode}.apk",
             requireActivity().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)?.absolutePath.toString()
         )
     }
