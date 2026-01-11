@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Toast
@@ -464,14 +465,21 @@ class UserFragment : Fragment(R.layout.fragment_user) {
         else
             ContextCompat.checkSelfPermission(requireActivity(), android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
 
-    // 启动下载的服务
     private fun startDownloadService() {
+        val downloadUrl = "https://gitee.com/ly0919/UESTC-experiment/releases/download/latest/transfer.apk"
+        val apkFileName = "transfer_Version${versionCode}.apk"
+        val downloadPath = requireActivity().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)?.absolutePath ?: ""
+
+        if (downloadPath.isEmpty()) {
+            Toast.makeText(requireActivity(), "获取下载目录失败", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         DownloadService.serviceStart(
             requireActivity(),
-            "https://gitee.com/ly0919/UESTC-experiment/releases/download/lastest/transfer.apk",
-            // todo：发版后新增改动只能继续往上加code再发，否则用户下载断点续传会合并出bug
-            "transfer_Version${versionCode}.apk",
-            requireActivity().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)?.absolutePath.toString()
+            downloadUrl,
+            apkFileName,
+            downloadPath
         )
     }
 

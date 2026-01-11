@@ -47,6 +47,9 @@
             android:launchMode="singleTask"
             android:screenOrientation="portrait">
         </activity>
+        <service
+            android:name=".view.foreground.download.DownloadService"
+            android:exported="false" />
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
