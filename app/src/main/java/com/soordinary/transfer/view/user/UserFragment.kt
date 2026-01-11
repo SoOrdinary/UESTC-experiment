@@ -397,7 +397,7 @@ class UserFragment : Fragment(R.layout.fragment_user) {
             Toast.makeText(requireActivity(), "正在查询最新版本", Toast.LENGTH_SHORT).show()
             val activity = requireActivity()
             CoroutineScope(Dispatchers.IO).launch {
-                val xmlUrl = "https://gitee.com/ly0919/UESTC-experiment/releases/download/lastest/version_info.xml"
+                val xmlUrl = "https://gitee.com/ly0919/UESTC-experiment/releases/download/latest/version_info.xml"
                 val oldVersion = getAppCurVersionInfo()
                 val newVersion = VersionXml.getAppVersionFromXml(xmlUrl)
                 // 有新版则提示更新
